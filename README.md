@@ -1,6 +1,6 @@
 # Human Fictions in Monetary Policy
 
-![Python application](https://github.com/mesjou/human-friction/workflows/Python%20application/badge.svg)
+![Python application](https://github.com/mesjou/human-frictions/actions/workflows/python-app.yml/badge.svg)
 
 Project name is a `<utility/tool/feature>` that allows `<insert_target_audience>` to do `<action/task_it_does>`.
 
