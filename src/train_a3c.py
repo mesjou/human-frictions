@@ -2,7 +2,7 @@ import argparse
 import os
 
 import ray
-from environment.single_env import LifeCycle
+from environment.single_adv_env import LifeCycle
 from ray import tune
 from ray.rllib.agents.ppo import PPOTrainer
 
@@ -22,8 +22,8 @@ def main(debug, stop_iters=2000, tf=False):
     }
 
     env_config = {
-        "episode_length": 20,
-        "retirement_date": 17,
+        "episode_length": 10,
+        "retirement_date": 7,
     }
 
     rllib_config = {
@@ -36,7 +36,7 @@ def main(debug, stop_iters=2000, tf=False):
         "train_batch_size": 512,
         "model": {"fcnet_hiddens": [50, 50]},
         "lr": 5e-3,
-        "seed": tune.grid_search(seeds),
+        #"seed": tune.grid_search(seeds),
         "num_gpus": int(os.environ.get("RLLIB_NUM_GPUS", "0")),
         "framework": "tf" if tf else "torch",
     }
@@ -44,11 +44,12 @@ def main(debug, stop_iters=2000, tf=False):
     tune_analysis = tune.run(
         PPOTrainer, config=rllib_config, stop=stop, checkpoint_freq=0, checkpoint_at_end=True, name="PPO_Life_Cycle"
     )
+
     ray.shutdown()
     return tune_analysis
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    debug_mode = False
+    debug_mode = True
     main(debug_mode, args.stop_iters, args.tf)
