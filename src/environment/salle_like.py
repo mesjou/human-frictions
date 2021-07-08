@@ -9,7 +9,7 @@ from utils import rewards
 from utils.firm import Firm
 
 
-class SalleLike(MultiAgentEnv):
+class NewKeynesMarket(MultiAgentEnv):
     def __init__(self, config):
         """
         :param config: environment configuration that specifies all adjustable parameters of the environment
@@ -30,7 +30,7 @@ class SalleLike(MultiAgentEnv):
 
         self.timestep = 0
         self.agents: Dict[int:HouseholdAgent] = {}
-        self.firm: Firm = Firm
+        self.firm: Firm = Firm()
 
     @property
     def episode_length(self):
@@ -89,12 +89,29 @@ class SalleLike(MultiAgentEnv):
         return obs, rew, done, info
 
     def generate_observations(self, actions):
+        """Defines the logic of a step in the environment.
 
-        # supply labor via wages
-        wages, fraction_consumption = self.parse_actions(actions)
-        self.supply_labor(wages)
-        self.consume(fraction_consumption)
+        1.) Agents supply labor and earn income.
+        2.) Firms set prices as a markup.
+        3.) Agents consume from their initial budget.
+        4.) Agents earn dividends from firms.
+        5.) Agents earn interest on their not consumed income.
 
+        :param actions: (Dict) The action contains the reservation wage of each agent and the fraction of their budget
+            they want to consume.
+
+        :return obs: (Dict) The observation of the agents. This includes average wage of the period,
+            their budget, the inflation and interest rates.
+        """
+
+        # 1. - 3.
+        wages, demand = self.parse_actions(actions)
+        self.clear_labor_market(wages)
+        self.clear_goods_market(demand)
+
+        # 4. - 5.
+        self.clear_dividends(self.firm.profit)
+        breakpoint("Not implemented past this point")
         obs = {}
         for agent in self.agents.values():
             obs[agent.agent_id] = {
@@ -103,12 +120,15 @@ class SalleLike(MultiAgentEnv):
                 "inflation": 0.0,
                 "interest": 0.0,
             }
+
+        assert self.firm.labor_demand <= self.n_agents, "Labor demand cannot be satisfied from agents"
+
         return obs
 
     def compute_rewards(self):
         rew = {}
         for agent in self.agents.values():
-            rew[agent.agent_id] = rewards.utility(labor=agent.labor, consumption=agent.consumption,)
+            rew[agent.agent_id] = rewards.utility(labor=agent.labor, consumption=agent.consumption)
         return rew
 
     def parse_actions(self, actions):
@@ -120,11 +140,29 @@ class SalleLike(MultiAgentEnv):
             wages[agent.agent_id] = agent_action[1]
         return wages, consumption
 
-    def supply_labor(self, wages):
+    def clear_labor_market(self, wages):
         """Household can supply labor and firms decide which to hire"""
-        # occupation = self.firm.hire_worker(wages)
-        raise NotImplementedError
+        occupation = self.firm.hire_worker(wages)
+        for agent in self.agents.values():
+            agent.earn(occupation[agent.agent_id])
+        self.firm.produce(occupation)
+        self.firm.set_price(occupation, wages)
 
-    def consume(self, fraction_consumption):
-        for agent in self.agents:
-            raise NotImplementedError
+    def clear_goods_market(self, demand):
+        """Household wants to buy goods from the firm
+
+        :param demand: (dict) defines how much each agent wants to consume in real values
+        """
+        consumption = self.firm.sell_goods(demand)
+        for agent in self.agents.values():
+            agent.consume(consumption[agent.agent_id], self.firm.price)
+        self.firm.earn_profits(consumption)
+
+    def clear_dividends(self, profit):
+        """Each agent receives a dividend computed as the share of total profit divided by number of agents"""
+        for agent in self.agents.values():
+            agent.budget += profit / self.n_agents
+
+    def clear_interests(self):
+        """Household earn interest on their budget balance which is specified by central bank"""
+        raise NotImplementedError

@@ -10,9 +10,14 @@ class HouseholdAgent(Agent):
         self.labor: float = 0.0
         self.consumption: float = 0.0
 
-    def consume(self, fraction: float):
+    def consume(self, consumption: float, price: float):
         """Defines how much an agent consumes and how the budget is affected"""
-        consumption = fraction * self.budget
         assert consumption >= 0.0
+        assert price >= 0.0
         self.consumption = consumption
-        self.budget -= consumption
+        self.budget -= consumption * price
+
+    def earn(self, hours_worked, wage):
+        assert hours_worked >= 0.0
+        assert wage >= 0.0
+        self.budget += hours_worked * wage
