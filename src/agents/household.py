@@ -20,4 +20,5 @@ class HouseholdAgent(Agent):
     def earn(self, hours_worked, wage):
         assert hours_worked >= 0.0
         assert wage >= 0.0
+        self.labor = hours_worked
         self.budget += hours_worked * wage

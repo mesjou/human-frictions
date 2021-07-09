@@ -2,11 +2,12 @@ import random
 from typing import Dict, Tuple
 
 import numpy as np
+from agents.bank import CentralBank
+from agents.firm import Firm
 from agents.household import HouseholdAgent
 from ray.rllib.env import MultiAgentEnv
 from ray.rllib.utils.typing import MultiAgentDict
 from utils import rewards
-from utils.firm import Firm
 
 
 class NewKeynesMarket(MultiAgentEnv):
@@ -30,7 +31,13 @@ class NewKeynesMarket(MultiAgentEnv):
 
         self.timestep = 0
         self.agents: Dict[int:HouseholdAgent] = {}
+
+        self.unemployment = 0.0
         self.firm: Firm = Firm()
+
+        self.inflation = 0.0
+        self.interest = 0.0
+        self.central_bank: CentralBank = CentralBank()
 
     @property
     def episode_length(self):
@@ -94,8 +101,10 @@ class NewKeynesMarket(MultiAgentEnv):
         1.) Agents supply labor and earn income.
         2.) Firms set prices as a markup.
         3.) Agents consume from their initial budget.
-        4.) Agents earn dividends from firms.
-        5.) Agents earn interest on their not consumed income.
+        4.) Firm learns
+        5.) Agents earn dividends from firms.
+        6.) Central bank sets interest rate
+        7.) Agents earn interest on their not consumed income.
 
         :param actions: (Dict) The action contains the reservation wage of each agent and the fraction of their budget
             they want to consume.
@@ -104,21 +113,23 @@ class NewKeynesMarket(MultiAgentEnv):
             their budget, the inflation and interest rates.
         """
 
-        # 1. - 3.
+        # 1. - 4.
         wages, demand = self.parse_actions(actions)
         self.clear_labor_market(wages)
         self.clear_goods_market(demand)
 
-        # 4. - 5.
+        # 5. - 7.
         self.clear_dividends(self.firm.profit)
-        breakpoint("Not implemented past this point")
+        self.clear_capital_market()
+
         obs = {}
         for agent in self.agents.values():
             obs[agent.agent_id] = {
-                "average_wage": 0.0,
+                "average_wage": np.mean([wage for wage in wages.values()]),
                 "budget": agent.budget,
-                "inflation": 0.0,
-                "interest": 0.0,
+                "inflation": self.inflation,
+                "interest": self.interest,
+                "unemployment": self.unemployment,
             }
 
         assert self.firm.labor_demand <= self.n_agents, "Labor demand cannot be satisfied from agents"
@@ -146,7 +157,9 @@ class NewKeynesMarket(MultiAgentEnv):
         for agent in self.agents.values():
             agent.earn(occupation[agent.agent_id])
         self.firm.produce(occupation)
-        self.firm.set_price(occupation, wages)
+        self.inflation = self.firm.set_price(occupation, wages)
+        self.unemployment = (self.n_agents - self.firm.labor_demand) / self.n_agents
+        self.firm.learn(self.n_agents)
 
     def clear_goods_market(self, demand):
         """Household wants to buy goods from the firm
@@ -163,6 +176,8 @@ class NewKeynesMarket(MultiAgentEnv):
         for agent in self.agents.values():
             agent.budget += profit / self.n_agents
 
-    def clear_interests(self):
-        """Household earn interest on their budget balance which is specified by central bank"""
-        raise NotImplementedError
+    def clear_capital_market(self):
+        """Agents earn interest on their budget balance which is specified by central bank"""
+        self.interest = self.central_bank.set_interest_rate(unemployment=self.unemployment, inflation=self.inflation)
+        for agent in self.agents.values():
+            agent.budget += self.interest * agent.budget
