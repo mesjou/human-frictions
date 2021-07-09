@@ -5,6 +5,7 @@ import numpy as np
 from agents.bank import CentralBank
 from agents.firm import Firm
 from agents.household import HouseholdAgent
+from gym import spaces
 from ray.rllib.env import MultiAgentEnv
 from ray.rllib.utils.typing import MultiAgentDict
 from utils import rewards
@@ -33,11 +34,21 @@ class NewKeynesMarket(MultiAgentEnv):
         self.agents: Dict[int:HouseholdAgent] = {}
 
         self.unemployment = 0.0
-        self.firm: Firm = Firm()
+        self.firm: Firm = Firm(init_labor_demand=float(self.n_agents))
 
         self.inflation = 0.0
         self.interest = 0.0
         self.central_bank: CentralBank = CentralBank()
+
+        # Actions of the format consumption x%, reservation wage x%
+        self.action_space = spaces.Box(low=np.array([0.0, 0.0]), high=np.array([np.inf, np.inf]), dtype=np.float32)
+
+        # Prices contains the OHCL values for the last five prices
+        self.observation_space = spaces.Box(
+            low=np.array([0.0, -np.inf, -np.inf, 0.0, 0.0]),
+            high=np.array([np.inf, np.inf, np.inf, np.inf, 1.0]),
+            dtype=np.float32,
+        )
 
     @property
     def episode_length(self):
@@ -74,7 +85,7 @@ class NewKeynesMarket(MultiAgentEnv):
         """
         self.timestep = 0
         self.agents = {}
-        self.setup_agents()
+        self.set_up_agents()
         obs = {}
         for agent in self.agents.values():
             obs[agent.agent_id] = {
@@ -82,6 +93,7 @@ class NewKeynesMarket(MultiAgentEnv):
                 "budget": agent.budget,
                 "inflation": 0.0,
                 "interest": 0.0,
+                "unemployment": 0.0,
             }
         return obs
 
@@ -155,7 +167,7 @@ class NewKeynesMarket(MultiAgentEnv):
         """Household can supply labor and firms decide which to hire"""
         occupation = self.firm.hire_worker(wages)
         for agent in self.agents.values():
-            agent.earn(occupation[agent.agent_id])
+            agent.earn(occupation[agent.agent_id], wages[agent.agent_id])
         self.firm.produce(occupation)
         self.inflation = self.firm.set_price(occupation, wages)
         self.unemployment = (self.n_agents - self.firm.labor_demand) / self.n_agents
