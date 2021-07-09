@@ -3,7 +3,14 @@ from typing import Dict
 
 
 class Firm(object):
-    def __init__(self, technology: float = 0.5, alpha: float = 0.2, learning_rate: float = 0.1, markup: float = 0.1):
+    def __init__(
+        self,
+        technology: float = 0.5,
+        alpha: float = 0.25,
+        learning_rate: float = 0.01,
+        markup: float = 0.1,
+        memory: float = 0.45,
+    ):
         assert isinstance(technology, float)
         assert technology >= 0.0
         self.technology = technology
@@ -20,6 +27,10 @@ class Firm(object):
         assert markup >= 0.0
         self.markup = markup
 
+        assert isinstance(memory, float)
+        assert 1.0 > memory >= 0.0
+        self.memory = memory
+
         self.labor_demand: float = 0.0
         self.average_profit: float = 0.0
         self.profit: float = 0.0
@@ -32,11 +43,13 @@ class Firm(object):
         assert labor >= 0.0
         self.production = self.technology * labor ** (1 - self.alpha)
 
-    def learn(self):
-        if self.profit / self.price >= self.average_profit:
-            self.labor_demand = self.labor_demand * (1 + self.learning_rate)
+    def learn(self, max_labor):
+        if self.profit >= self.average_profit:
+            labor_demand = self.labor_demand * (1 + self.learning_rate)
         else:
-            self.labor_demand = self.labor_demand * (1 - self.learning_rate)
+            labor_demand = self.labor_demand * (1 - self.learning_rate)
+        self.labor_demand = min(labor_demand, max_labor)
+        self.average_profit = (1 - self.memory) * self.profit + self.memory * self.average_profit
 
     def hire_worker(self, wages: Dict):
         """Determine the hiring status based on reservation wages.
@@ -60,7 +73,10 @@ class Firm(object):
 
     def set_price(self, occupation, wages):
         self.labor_costs = sum([occupation[agent.agent_id] * wages[agent.agent_id] for agent in wages.keys()])
-        self.price = (1 + self.markup) / (1 - self.alpha) * self.labor_costs / self.production
+        new_price = (1 + self.markup) / (1 - self.alpha) * self.labor_costs / self.production
+        inflation = (new_price - self.price) / self.price
+        self.price = new_price
+        return inflation
 
     def sell_goods(self, demand: Dict):
         """Determine how much the firm sells to which agent.
