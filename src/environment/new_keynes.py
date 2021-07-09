@@ -170,8 +170,7 @@ class NewKeynesMarket(MultiAgentEnv):
             agent.earn(occupation[agent.agent_id], wages[agent.agent_id])
         self.firm.produce(occupation)
         self.inflation = self.firm.set_price(occupation, wages)
-        self.unemployment = (self.n_agents - self.firm.labor_demand) / self.n_agents
-        self.firm.learn(self.n_agents)
+        self.unemployment = self.get_unemployment()
 
     def clear_goods_market(self, demand):
         """Household wants to buy goods from the firm
@@ -182,6 +181,7 @@ class NewKeynesMarket(MultiAgentEnv):
         for agent in self.agents.values():
             agent.consume(consumption[agent.agent_id], self.firm.price)
         self.firm.earn_profits(consumption)
+        self.firm.learn(self.n_agents)
 
     def clear_dividends(self, profit):
         """Each agent receives a dividend computed as the share of total profit divided by number of agents"""
@@ -193,3 +193,7 @@ class NewKeynesMarket(MultiAgentEnv):
         self.interest = self.central_bank.set_interest_rate(unemployment=self.unemployment, inflation=self.inflation)
         for agent in self.agents.values():
             agent.budget += self.interest * agent.budget
+
+    def get_unemployment(self):
+        assert self.firm.labor_demand > 0.0
+        return (self.n_agents - self.firm.labor_demand) / self.n_agents

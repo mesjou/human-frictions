@@ -38,13 +38,13 @@ class Firm(object):
 
         self.average_profit: float = 0.0
         self.profit: float = 0.0
-        self.price: float = 0.0
+        self.price: float = 1.0
         self.production: float = 0.0
         self.labor_costs: float = 0.0
 
     def produce(self, occupation: Dict):
         labor = sum([occupation[agent_id] for agent_id in occupation.keys()])
-        assert labor >= 0.0
+        assert labor > 0.0
         self.production = self.technology * labor ** (1 - self.alpha)
 
     def learn(self, max_labor):
@@ -78,10 +78,15 @@ class Firm(object):
         return labor_demand
 
     def set_price(self, occupation, wages):
-        self.labor_costs = sum([occupation[agent_id] * wages[agent_id] for agent_id in wages.keys()])
+        labor_costs = sum([occupation[agent_id] * wages[agent_id] for agent_id in wages.keys()])
+        assert labor_costs > 0.0
+        self.labor_costs = labor_costs
+
         new_price = (1 + self.markup) / (1 - self.alpha) * self.labor_costs / self.production
         inflation = (new_price - self.price) / self.price
+        assert new_price > 0.0, "Firms do not set price below or equal to zero"
         self.price = new_price
+
         return inflation
 
     def sell_goods(self, demand: Dict):
