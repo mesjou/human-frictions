@@ -17,7 +17,7 @@ class HouseholdAgent(Agent):
         self.consumption = consumption
         self.budget -= consumption * price
 
-    def earn(self, hours_worked, wage):
+    def earn(self, hours_worked: float, wage: float):
         assert hours_worked >= 0.0
         assert wage >= 0.0
         self.labor = hours_worked
