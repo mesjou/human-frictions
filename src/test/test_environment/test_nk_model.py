@@ -59,6 +59,33 @@ def test_get_unemployment():
         env.get_unemployment()
 
 
+def test_clear_goods_market():
+    config = {"episode_length": 20, "n_agents": 2, "init_budget": 0.0}
+    env = NewKeynesMarket(config)
+    env.reset()
+    env.firm.price = 1.0
+    demand = {"agent-0": 0.5, "agent-1": 0.3}
+
+    # nothing to sell
+    env.firm.production = 0.0
+    env.firm.average_profit = 1.0
+    env.clear_goods_market(demand)
+    assert env.agents["agent-0"].budget == env.agents["agent-1"].budget
+    assert env.agents["agent-0"].budget == 0.0
+    assert env.firm.profit == 0.0
+    assert env.firm.labor_demand == 2 * 0.99
+
+    # production of 1 to sell
+    env.firm.production = 1.0
+    env.clear_goods_market(demand)
+    assert env.agents["agent-0"].budget < env.agents["agent-1"].budget
+    assert env.agents["agent-0"].budget < 0.0
+    assert env.agents["agent-1"].budget < 0.0
+    assert env.agents["agent-0"].consumption > env.agents["agent-1"].consumption
+    assert env.firm.profit == 0.8
+    assert env.firm.labor_demand == 2 * 0.99 * 1.01
+
+
 if __name__ == "__main__":
     test_clear_labor_market()
     test_get_unemployment()

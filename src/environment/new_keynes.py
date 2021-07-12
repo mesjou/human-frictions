@@ -182,6 +182,7 @@ class NewKeynesMarket(MultiAgentEnv):
             agent.consume(consumption[agent.agent_id], self.firm.price)
         self.firm.earn_profits(consumption)
         self.firm.learn(self.n_agents)
+        self.firm.update_average_profit()
 
     def clear_dividends(self, profit):
         """Each agent receives a dividend computed as the share of total profit divided by number of agents"""
