@@ -90,7 +90,7 @@ class NewKeynesMarket(MultiAgentEnv):
         for agent in self.agents.values():
             obs[agent.agent_id] = {
                 "average_wage": 0.0,
-                "budget": agent.budget,
+                "budget": self.init_budget,
                 "inflation": 0.0,
                 "interest": 1.0,
                 "unemployment": 0.0,
