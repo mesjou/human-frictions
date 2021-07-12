@@ -48,6 +48,7 @@ class Firm(object):
         self.production = self.technology * labor ** (1 - self.alpha)
 
     def learn(self, max_labor):
+        assert max_labor > 0.0, "At least some workforce must be available"
         if self.profit >= self.average_profit:
             labor_demand = self.labor_demand * (1 + self.learning_rate)
         else:
@@ -55,12 +56,15 @@ class Firm(object):
 
         # assert that labor demand is never zero
         self.labor_demand = max(min(labor_demand, max_labor), self.learning_rate)
+
+    def update_average_profit(self):
         self.average_profit = (1 - self.memory) * self.profit + self.memory * self.average_profit
 
     def hire_worker(self, wages: Dict):
         """Determine the hiring status based on reservation wages.
 
         The firm hires agents based on the wages. Lowest wages are hired first until labor demand is satisfied.
+        When hired wage is payed to the agents and profit of firm is reduced.
         """
         sorted_wages = {k: v for k, v in sorted(wages.items(), key=lambda item: item[1])}
         labor_demand = {}
@@ -72,6 +76,7 @@ class Firm(object):
                 demand = self.labor_demand - hired_labor
             else:
                 demand = 0.0
+            self.profit -= wage * demand
             labor_demand[agent_id] = demand
             hired_labor += demand
 
@@ -90,11 +95,19 @@ class Firm(object):
         return inflation
 
     def sell_goods(self, demand: Dict):
-        """Determine how much the firm sells to which agent.
-
+        """
+        Determine how much the firm sells to which agent.
         The order of the selling process is randomly drawn.
-        If the demand can not be satisfied the agent cannot consum.
+        If the demand can not be satisfied the agent cannot consume.
         If the demand is to low not consumed goods get wasted and do not increase firm`s profit.
+
+        Args:
+            demand (dict): dictionary of {agent_id: demand} with an entry for each agent that specifies
+                the amount the agent wants to consume.
+
+        Returns:
+            consumption (dict): dictionary of {agent_id: consumption} with an entry for each agent that specifies
+                the amount the agent has consumed based on available supply of the firm.
         """
         agent_ids = list(demand.keys())  # List of keys
         random.shuffle(agent_ids)
@@ -102,7 +115,7 @@ class Firm(object):
         sold_goods = 0.0
         for agent_id in agent_ids:
             agent_demand = demand[agent_id]
-            if agent_demand >= (self.production - sold_goods):
+            if (self.production - sold_goods) >= agent_demand:
                 d = agent_demand
             elif (self.production - sold_goods) >= 0.0:
                 d = self.production - sold_goods
@@ -114,4 +127,6 @@ class Firm(object):
         return consumption
 
     def earn_profits(self, consumption):
+        """Calculate profit of firm after selling good for specified price."""
+        assert self.price > 0.0
         self.profit = sum([consumption[agent_id] * self.price for agent_id in consumption.keys()])

@@ -13,7 +13,7 @@ class HouseholdAgent(Agent):
     def consume(self, consumption: float, price: float):
         """Defines how much an agent consumes and how the budget is affected"""
         assert consumption >= 0.0
-        assert price >= 0.0
+        assert price > 0.0
         self.consumption = consumption
         self.budget -= consumption * price
 
