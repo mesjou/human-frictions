@@ -37,7 +37,7 @@ class NewKeynesMarket(MultiAgentEnv):
         self.firm: Firm = Firm(init_labor_demand=float(self.n_agents))
 
         self.inflation = 0.0
-        self.interest = 0.0
+        self.interest = 1.0
         self.central_bank: CentralBank = CentralBank()
 
         # Actions of the format consumption x%, reservation wage x%
@@ -92,7 +92,7 @@ class NewKeynesMarket(MultiAgentEnv):
                 "average_wage": 0.0,
                 "budget": agent.budget,
                 "inflation": 0.0,
-                "interest": 0.0,
+                "interest": 1.0,
                 "unemployment": 0.0,
             }
         return obs
@@ -192,8 +192,10 @@ class NewKeynesMarket(MultiAgentEnv):
     def clear_capital_market(self):
         """Agents earn interest on their budget balance which is specified by central bank"""
         self.interest = self.central_bank.set_interest_rate(unemployment=self.unemployment, inflation=self.inflation)
+
+        # assert self.interest >= 1.0, "Negative interest is not allowed"
         for agent in self.agents.values():
-            agent.budget += self.interest * agent.budget
+            agent.budget = self.interest * agent.budget
 
     def get_unemployment(self):
         assert self.firm.labor_demand > 0.0

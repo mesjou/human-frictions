@@ -86,7 +86,87 @@ def test_clear_goods_market():
     assert env.firm.labor_demand == 2 * 0.99 * 1.01
 
 
+def test_clear_dividends():
+    config = {"episode_length": 20, "n_agents": 2, "init_budget": 0.0}
+    env = NewKeynesMarket(config)
+    env.reset()
+    env.clear_dividends(10.0)
+    for agent in env.agents.values():
+        assert agent.budget == 5.0
+
+    env.clear_dividends(-10.0)
+    for agent in env.agents.values():
+        assert agent.budget == 0.0
+
+    env.clear_dividends(0.0)
+    for agent in env.agents.values():
+        assert agent.budget == 0.0
+
+    config = {"episode_length": 20, "n_agents": 10, "init_budget": 0.0}
+    env = NewKeynesMarket(config)
+    env.reset()
+    env.clear_dividends(10.0)
+    for agent in env.agents.values():
+        assert agent.budget == 1.0
+
+
+def test_clear_capital_market():
+
+    # target is reached and interest = 1.02
+    config = {"episode_length": 20, "n_agents": 2, "init_budget": 2.0}
+    env = NewKeynesMarket(config)
+    env.reset()
+    env.inflation = 0.02
+    env.unemployment = 0.0
+    env.clear_capital_market()
+    for agent in env.agents.values():
+        assert agent.budget == 2.04
+
+    # inflation too high thus interest > 1.02
+    config = {"episode_length": 20, "n_agents": 2, "init_budget": 2.0}
+    env = NewKeynesMarket(config)
+    env.reset()
+    env.inflation = 0.03
+    env.unemployment = 0.0
+    env.clear_capital_market()
+    for agent in env.agents.values():
+        assert agent.budget > 2.04
+
+    # inflation too low: interest < 1.02
+    config = {"episode_length": 20, "n_agents": 2, "init_budget": 2.0}
+    env = NewKeynesMarket(config)
+    env.reset()
+    env.inflation = 0.01
+    env.unemployment = 0.0
+    env.clear_capital_market()
+    for agent in env.agents.values():
+        assert agent.budget < 2.04
+
+    # unemployment too high thus interest < 1.02
+    config = {"episode_length": 20, "n_agents": 2, "init_budget": 2.0}
+    env = NewKeynesMarket(config)
+    env.reset()
+    env.inflation = 0.02
+    env.unemployment = 0.5
+    env.clear_capital_market()
+    for agent in env.agents.values():
+        assert agent.budget < 2.04
+
+    # unemployment too low: interest > 1.02
+    config = {"episode_length": 20, "n_agents": 2, "init_budget": 2.0}
+    env = NewKeynesMarket(config)
+    env.reset()
+    env.central_bank.natural_unemployment = 0.2
+    env.inflation = 0.02
+    env.unemployment = 0.1
+    env.clear_capital_market()
+    for agent in env.agents.values():
+        assert agent.budget > 2.04
+
+
 if __name__ == "__main__":
     test_clear_labor_market()
     test_get_unemployment()
     test_env()
+    test_clear_dividends()
+    test_clear_capital_market()
