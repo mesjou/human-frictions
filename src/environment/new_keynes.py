@@ -107,7 +107,7 @@ class NewKeynesMarket(MultiAgentEnv):
 
         return obs, rew, done, info
 
-    def generate_observations(self, actions):
+    def generate_observations(self, actions: MultiAgentDict) -> MultiAgentDict:
         """Defines the logic of a step in the environment.
 
         1.) Agents supply labor and earn income.
@@ -148,13 +148,13 @@ class NewKeynesMarket(MultiAgentEnv):
 
         return obs
 
-    def compute_rewards(self):
+    def compute_rewards(self) -> MultiAgentDict:
         rew = {}
         for agent in self.agents.values():
             rew[agent.agent_id] = rewards.utility(labor=agent.labor, consumption=agent.consumption)
         return rew
 
-    def parse_actions(self, actions):
+    def parse_actions(self, actions: MultiAgentDict) -> Tuple[MultiAgentDict, MultiAgentDict]:
         wages = {}
         consumption = {}
         for agent in self.agents.values():
@@ -163,7 +163,7 @@ class NewKeynesMarket(MultiAgentEnv):
             wages[agent.agent_id] = agent_action[1]
         return wages, consumption
 
-    def clear_labor_market(self, wages):
+    def clear_labor_market(self, wages: MultiAgentDict):
         """Household can supply labor and firms decide which to hire"""
         occupation = self.firm.hire_worker(wages)
         for agent in self.agents.values():
@@ -172,7 +172,7 @@ class NewKeynesMarket(MultiAgentEnv):
         self.inflation = self.firm.set_price(occupation, wages)
         self.unemployment = self.get_unemployment()
 
-    def clear_goods_market(self, demand):
+    def clear_goods_market(self, demand: MultiAgentDict):
         """Household wants to buy goods from the firm
 
         :param demand: (dict) defines how much each agent wants to consume in real values
@@ -184,7 +184,7 @@ class NewKeynesMarket(MultiAgentEnv):
         self.firm.learn(self.n_agents)
         self.firm.update_average_profit()
 
-    def clear_dividends(self, profit):
+    def clear_dividends(self, profit: float):
         """Each agent receives a dividend computed as the share of total profit divided by number of agents"""
         for agent in self.agents.values():
             agent.budget += profit / self.n_agents

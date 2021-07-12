@@ -27,7 +27,7 @@ class CentralBank(object):
         assert natural_interest >= 0.0
         self.natural_interest = natural_interest
 
-    def set_interest_rate(self, unemployment: float, inflation: float):
+    def set_interest_rate(self, unemployment: float, inflation: float) -> float:
         interest_rate = (1 + self.inflation_target) * (1 + self.natural_interest)
         interest_rate *= ((1 + inflation) / (1 + self.inflation_target)) ** self.phi_inflation
         interest_rate *= ((1 + self.natural_unemployment) / (1 + unemployment)) ** self.phi_unemployment

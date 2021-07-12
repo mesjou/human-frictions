@@ -47,7 +47,7 @@ class Firm(object):
         assert labor > 0.0
         self.production = self.technology * labor ** (1 - self.alpha)
 
-    def learn(self, max_labor):
+    def learn(self, max_labor: float):
         assert max_labor > 0.0, "At least some workforce must be available"
         if self.profit >= self.average_profit:
             labor_demand = self.labor_demand * (1 + self.learning_rate)
@@ -60,7 +60,7 @@ class Firm(object):
     def update_average_profit(self):
         self.average_profit = (1 - self.memory) * self.profit + self.memory * self.average_profit
 
-    def hire_worker(self, wages: Dict):
+    def hire_worker(self, wages: Dict) -> Dict:
         """Determine the hiring status based on reservation wages.
 
         The firm hires agents based on the wages. Lowest wages are hired first until labor demand is satisfied.
@@ -82,7 +82,7 @@ class Firm(object):
 
         return labor_demand
 
-    def set_price(self, occupation, wages):
+    def set_price(self, occupation: Dict, wages: Dict) -> float:
         labor_costs = sum([occupation[agent_id] * wages[agent_id] for agent_id in wages.keys()])
         assert labor_costs > 0.0
         self.labor_costs = labor_costs
@@ -94,7 +94,7 @@ class Firm(object):
 
         return inflation
 
-    def sell_goods(self, demand: Dict):
+    def sell_goods(self, demand: Dict) -> Dict:
         """
         Determine how much the firm sells to which agent.
         The order of the selling process is randomly drawn.
@@ -126,7 +126,7 @@ class Firm(object):
 
         return consumption
 
-    def earn_profits(self, consumption):
+    def earn_profits(self, consumption: Dict):
         """Calculate profit of firm after selling good for specified price."""
         assert self.price > 0.0
         self.profit = sum([consumption[agent_id] * self.price for agent_id in consumption.keys()])
