@@ -3,28 +3,6 @@ import pytest
 from environment.new_keynes import NewKeynesMarket
 
 
-def test_env():
-    config = {"episode_length": 20, "n_agents": 4, "init_budget": 0.0}
-
-    def act(env: NewKeynesMarket):
-        return {agent.agent_id: env.action_space.sample() for agent in env.agents.values()}
-
-    n_steps = 20
-    env = NewKeynesMarket(config)
-    ob = env.reset()  # noqa E841
-    for step in range(n_steps):
-        action = act(env)
-        ob_next, r, done, _ = env.step(action)
-        if done:
-            ob = env.reset()  # noqa E841
-        else:
-            ob = ob_next  # noqa E841
-        # print(ob, action, r)
-        assert isinstance(r, dict)
-        assert isinstance(done, dict)
-        assert isinstance(ob_next, dict)
-
-
 def test_clear_labor_market():
     config = {"episode_length": 20, "n_agents": 2, "init_budget": 0.0}
     wages = {"agent-0": 0.5627646, "agent-1": 0.0175226}
@@ -167,6 +145,5 @@ def test_clear_capital_market():
 if __name__ == "__main__":
     test_clear_labor_market()
     test_get_unemployment()
-    test_env()
     test_clear_dividends()
     test_clear_capital_market()
