@@ -1,4 +1,4 @@
-from agents.base_agent import Agent
+from human_friction.agents.base_agent import Agent
 
 
 class HouseholdAgent(Agent):

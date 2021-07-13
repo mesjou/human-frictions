@@ -1,6 +1,6 @@
 import pytest
 
-from environment.new_keynes import NewKeynesMarket
+from human_friction.environment.new_keynes import NewKeynesMarket
 
 
 def test_clear_labor_market():

@@ -1,4 +1,4 @@
-from agents.bank import CentralBank
+from human_friction.agents.bank import CentralBank
 
 
 def test_set_interest_rate():

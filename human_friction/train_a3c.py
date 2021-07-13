@@ -2,7 +2,7 @@ import argparse
 import os
 
 import ray
-from environment.single_env import LifeCycle
+from human_friction.environment.single_env import LifeCycle
 from ray import tune
 from ray.rllib.agents.ppo import PPOTrainer
 
