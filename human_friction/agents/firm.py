@@ -83,6 +83,15 @@ class Firm(object):
         return labor_demand
 
     def set_price(self, occupation: Dict, wages: Dict) -> float:
+        """
+        The firm sets the price as a markup on the marginal costs.
+        Args:
+            occupation (dict): a dictionary that gives occupation per agent {agent_id: occupation between 0.0 and 1.0}.
+            wages (dict): a dictionary that gives the agents' reservation wage {agent_id: wage}.
+
+        Returns:
+            inflation (float): the inflation as a change in the price due to the price setting by the firm.
+        """
         labor_costs = sum([occupation[agent_id] * wages[agent_id] for agent_id in wages.keys()])
         assert labor_costs > 0.0
         self.labor_costs = labor_costs

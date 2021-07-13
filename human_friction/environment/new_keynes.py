@@ -2,7 +2,6 @@ import random
 from typing import Dict, Tuple
 
 import numpy as np
-from gym import spaces
 from human_friction.agents.bank import CentralBank
 from human_friction.agents.firm import Firm
 from human_friction.agents.household import HouseholdAgent
@@ -109,7 +108,7 @@ class NewKeynesMarket(MultiAgentEnv):
 
         natural_unemployment = config.get("natural_unemployment", 0.0)
         assert isinstance(natural_unemployment, float)
-        assert natural_unemployment >= 0.0
+        assert 1.0 >= natural_unemployment >= 0.0
 
         natural_interest = config.get("natural_interest", 0.0)
         assert isinstance(natural_interest, float)
@@ -141,16 +140,6 @@ class NewKeynesMarket(MultiAgentEnv):
             natural_interest=natural_interest,
             phi_unemployment=phi_unemployment,
             phi_inflation=phi_inflation,
-        )
-
-        # Actions of the format consumption x%, reservation wage x%
-        self.action_space = spaces.Box(low=np.array([0.0, 0.0]), high=np.array([np.inf, np.inf]), dtype=np.float32)
-
-        # Observation of the format average_wage, budget, inflation, interest, unemployment
-        self.observation_space = spaces.Box(
-            low=np.array([0.0, -np.inf, -np.inf, -np.inf, 0.0]),
-            high=np.array([np.inf, np.inf, np.inf, np.inf, 1.0]),
-            dtype=np.float32,
         )
 
     @property
