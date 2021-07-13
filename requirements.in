@@ -4,3 +4,4 @@ pytest
 gym
 ray[rllib]
 dm-tree
+tensorflow

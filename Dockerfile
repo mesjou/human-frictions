@@ -4,7 +4,7 @@ ADD human_friction/train.py /
 
 COPY requirements.txt .
 RUN pip3 install --upgrade pip \
- && pip3 install -r requirements.txt
+ && pip3 install --default-timeout=5000 -r requirements.txt
 
 COPY . .
 

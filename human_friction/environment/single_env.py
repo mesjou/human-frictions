@@ -13,7 +13,7 @@ class LifeCycle(gym.Env):
         self.retirement = 0.8
         self.T = config["episode_length"]
         self.retirement_date = config["retirement_date"]
-        self.action_space = Box(0.0, np.inf, shape=(1,))
+        self.action_space = Box(low=np.array([0.0, 0.0]), high=np.array([np.inf, np.inf]), dtype=np.float32)
         self.observation_space = Box(
             low=np.array([0.0, -np.inf, 0.0]),
             high=np.array([config["episode_length"], np.inf, np.inf]),
