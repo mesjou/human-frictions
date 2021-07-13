@@ -3,3 +3,4 @@ numpy
 pytest
 gym
 ray
+dm-tree

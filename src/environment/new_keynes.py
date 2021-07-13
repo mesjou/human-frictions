@@ -30,22 +30,22 @@ class NewKeynesMarket(MultiAgentEnv):
         assert isinstance(init_budget, float)
         self.init_budget = init_budget
 
-        self.timestep = 0
-        self.agents: Dict[int:HouseholdAgent] = {}
+        self.timestep: int = 0
+        self.agents: Dict[str:HouseholdAgent] = {}
 
-        self.unemployment = 0.0
+        self.unemployment: float = 0.0
         self.firm: Firm = Firm(init_labor_demand=float(self.n_agents))
 
-        self.inflation = 0.0
-        self.interest = 1.0
+        self.inflation: float = 0.0
+        self.interest: float = 1.0
         self.central_bank: CentralBank = CentralBank()
 
         # Actions of the format consumption x%, reservation wage x%
         self.action_space = spaces.Box(low=np.array([0.0, 0.0]), high=np.array([np.inf, np.inf]), dtype=np.float32)
 
-        # Prices contains the OHCL values for the last five prices
+        # Observation of the format average_wage, budget, inflation, interest, unemployment
         self.observation_space = spaces.Box(
-            low=np.array([0.0, -np.inf, -np.inf, 0.0, 0.0]),
+            low=np.array([0.0, -np.inf, -np.inf, -np.inf, 0.0]),
             high=np.array([np.inf, np.inf, np.inf, np.inf, 1.0]),
             dtype=np.float32,
         )
