@@ -34,7 +34,7 @@ class LifeCycle(gym.Env):
         self.budget += -action[0] + cash_inflow
 
         if self.t == self.T and self.budget < 0:
-            reward = -60
+            reward = -60.0
         else:
             reward = np.log(action[0] + 1.0)
         next_cash_flow = self.income if self.t + 1 <= self.retirement_date else self.retirement
