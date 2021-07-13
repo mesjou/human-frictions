@@ -22,7 +22,3 @@ def test_set_interest_rate():
     )
     interest_rate = bank_1.set_interest_rate(unemployment=0.0, inflation=0.0)
     assert interest_rate < 1.5
-
-
-if __name__ == "__main__":
-    test_set_interest_rate()

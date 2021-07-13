@@ -48,8 +48,3 @@ def test_compute_rewards():
     rew = env.compute_rewards()
     agent_ids = list(env.agents.keys())
     assert rew[agent_ids[0]] > rew[agent_ids[1]]
-
-
-if __name__ == "__main__":
-    test_env()
-    test_compute_rewards()
