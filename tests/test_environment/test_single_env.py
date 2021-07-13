@@ -1,4 +1,4 @@
-from environment.single_env import LifeCycle
+from human_friction.environment.single_env import LifeCycle
 
 
 def test_env():

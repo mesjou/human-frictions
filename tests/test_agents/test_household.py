@@ -1,6 +1,6 @@
 import pytest
 
-from agents.household import HouseholdAgent
+from human_friction.agents.household import HouseholdAgent
 
 
 def test_earn():

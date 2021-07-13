@@ -2,13 +2,13 @@ import random
 from typing import Dict, Tuple
 
 import numpy as np
-from agents.bank import CentralBank
-from agents.firm import Firm
-from agents.household import HouseholdAgent
 from gym import spaces
+from human_friction.agents.bank import CentralBank
+from human_friction.agents.firm import Firm
+from human_friction.agents.household import HouseholdAgent
+from human_friction.utils import rewards
 from ray.rllib.env import MultiAgentEnv
 from ray.rllib.utils.typing import MultiAgentDict
-from utils import rewards
 
 
 class NewKeynesMarket(MultiAgentEnv):

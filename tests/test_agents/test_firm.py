@@ -1,7 +1,7 @@
 import pytest
 
 import numpy as np
-from agents.firm import Firm
+from human_friction.agents.firm import Firm
 
 
 def test_hire_worker():

@@ -1,4 +1,4 @@
-from environment.new_keynes import NewKeynesMarket
+from human_friction.environment.new_keynes import NewKeynesMarket
 
 
 def act(env: NewKeynesMarket):
