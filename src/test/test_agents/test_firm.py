@@ -162,12 +162,3 @@ def test_update_average_profit():
     firm.average_profit = 0.0
     firm.update_average_profit()
     assert firm.average_profit == 10.0
-
-
-if __name__ == "__main__":
-    test_hire_worker()
-    test_produce()
-    test_set_price()
-    test_sell_goods()
-    test_learn()
-    test_update_average_profit()

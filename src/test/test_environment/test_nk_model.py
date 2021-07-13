@@ -140,10 +140,3 @@ def test_clear_capital_market():
     env.clear_capital_market()
     for agent in env.agents.values():
         assert agent.budget > 2.04
-
-
-if __name__ == "__main__":
-    test_clear_labor_market()
-    test_get_unemployment()
-    test_clear_dividends()
-    test_clear_capital_market()

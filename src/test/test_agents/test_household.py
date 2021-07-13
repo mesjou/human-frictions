@@ -31,8 +31,3 @@ def test_consume():
 
     with pytest.raises(Exception):
         agent.consume(consumption=3.0, price=0.0)
-
-
-if __name__ == "__main__":
-    test_earn()
-    test_consume()
