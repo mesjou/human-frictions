@@ -2,5 +2,5 @@ pandas
 numpy
 pytest
 gym
-ray
+ray[rllib]
 dm-tree
