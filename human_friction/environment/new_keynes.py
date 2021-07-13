@@ -12,33 +12,136 @@ from ray.rllib.utils.typing import MultiAgentDict
 
 
 class NewKeynesMarket(MultiAgentEnv):
+    """
+    New Keynes Environment class. Should be used to simulate labor supply and consume decision of households.
+    Instantiates the households, firm and central bank.
+
+    Args:
+        config (dict): A dictionary with configuration parameter {"parameter name": parameter value} specifying the
+            parameter value if it is in the dictionary.
+
+            The dictionary keys must include:
+                n_agents (int): The number of household agents.
+                episode_length (int): Number of timesteps in a single episode.
+
+            The dictionary keys could include:
+                Agent specific
+                init_budget (float): How much budget each household agent should have at beginning of an episode.
+
+                Env specific
+                init_unemployment (float): How much unemployment is at the beginning of an episode, default = 0.0.
+                init_inflation (float): How much inflation is at the beginning of an episode, default = 0.02.
+                init_interest (float): How much nominal interest is at the beginning of an episode, default = 1.02.
+
+                Firm specific
+                technology (float): The technology factor of the firm, default = 0.5.
+                alpha (float): Output elasticity of the firm`s Cobb-Douglas production function, default = 0.25.
+                learning_rate (float): How fast does the firm updates its labor demand, default = 0.01.
+                markup (float): The firm's price markup on its marginal costs, default = 0.1.
+                memory (float): The firm's memory of past profits, determines how much weight is given to past profits
+                    during learning, default = 0.45.
+
+                Central Bank specific
+                inflation_target (float): Inflation target of the central bank, default = 0.02.
+                natural_unemployment (float): The natural unemployment of the economy, default = 0.0.
+                natural_interest (float): The natural interest of the economy, default = 0.0.
+                phi_unemployment (float): The CB's reaction coefficients to unemployment, default = 0.1.
+                phi_inflation (float): The CB's reaction coefficients to inflation, default = 0.2.
+    """
+
     def __init__(self, config):
-        """
-        :param config: environment configuration that specifies all adjustable parameters of the environment
-        """
-        n_agents = config["n_agents"]
-        assert isinstance(n_agents, int)
+
+        # Non-optional parameters
+        # ----------
+
+        n_agents = config.get("n_agents", None)
+        assert isinstance(n_agents, int), "Number of agents must be specified as int in config['n_agents']"
         assert n_agents >= 1
         self.n_agents = n_agents
 
-        episode_length = config["episode_length"]
-        assert isinstance(episode_length, int)
+        episode_length = config.get("episode_length", None)
+        assert isinstance(episode_length, int), "Episode length must be specified as int in config['episode_length']"
         assert episode_length >= 1
         self._episode_length = episode_length
 
-        init_budget = config["init_budget"]
+        # Optional parameters
+        # ----------
+
+        init_budget = config.get("init_budget", 0.0)
         assert isinstance(init_budget, float)
         self.init_budget = init_budget
 
+        init_unemployment = config.get("init_unemployment", 0.0)
+        assert isinstance(init_unemployment, float)
+        assert 0.0 <= init_unemployment <= 1.0
+        self.unemployment = init_unemployment
+
+        init_inflation = config.get("init_inflation", 0.02)
+        assert isinstance(init_inflation, float)
+        self.inflation = init_inflation
+
+        init_interest = config.get("init_interest", 1.02)
+        assert isinstance(init_interest, float)
+        self.interest = init_interest
+
+        technology = config.get("technology", 0.5)
+        assert technology > 0.0
+        assert isinstance(technology, float)
+
+        alpha = config.get("alpha", 0.25)
+        assert isinstance(alpha, float)
+        assert 0.0 < alpha <= 1.0
+
+        learning_rate = config.get("learning_rate", 0.01)
+        assert isinstance(learning_rate, float)
+        assert learning_rate > 0.0
+
+        markup = config.get("markup", 0.1)
+        assert isinstance(markup, float)
+        assert markup >= 0.0
+
+        memory = config.get("memory", 0.45)
+        assert isinstance(memory, float)
+        assert memory > 0.0
+
+        inflation_target = config.get("inflation_target", 0.02)
+        assert isinstance(inflation_target, float)
+
+        natural_unemployment = config.get("natural_unemployment", 0.0)
+        assert isinstance(natural_unemployment, float)
+        assert natural_unemployment >= 0.0
+
+        natural_interest = config.get("natural_interest", 0.0)
+        assert isinstance(natural_interest, float)
+
+        phi_unemployment = config.get("phi_unemployment", 0.1)
+        assert isinstance(phi_unemployment, float)
+        assert phi_unemployment > 0.0
+
+        phi_inflation = config.get("phi_inflation", 0.2)
+        assert isinstance(phi_inflation, float)
+        assert phi_inflation > 0.0
+
+        # Final setup of the environment
+        # ----------
+
         self.timestep: int = 0
         self.agents: Dict[str:HouseholdAgent] = {}
-
-        self.unemployment: float = 0.0
-        self.firm: Firm = Firm(init_labor_demand=float(self.n_agents))
-
-        self.inflation: float = 0.0
-        self.interest: float = 1.0
-        self.central_bank: CentralBank = CentralBank()
+        self.firm: Firm = Firm(
+            init_labor_demand=float(self.n_agents),
+            technology=technology,
+            alpha=alpha,
+            learning_rate=learning_rate,
+            markup=markup,
+            memory=memory,
+        )
+        self.central_bank: CentralBank = CentralBank(
+            inflation_target=inflation_target,
+            natural_unemployment=natural_unemployment,
+            natural_interest=natural_interest,
+            phi_unemployment=phi_unemployment,
+            phi_inflation=phi_inflation,
+        )
 
         # Actions of the format consumption x%, reservation wage x%
         self.action_space = spaces.Box(low=np.array([0.0, 0.0]), high=np.array([np.inf, np.inf]), dtype=np.float32)
