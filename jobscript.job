@@ -1,0 +1,20 @@
+#!/bin/bash --login 
+#$ -cwd 
+#$ -N myjob 
+#$ -o myjob.out 
+#$ -j y 
+#$ -e myjob.err
+#$ -l gpus=1
+#$ -M anna.almosova@tu-berlin.de
+
+#module load tensorflow/1.14
+#module load anaconda3
+#module load cudatoolkit/9.0 cudnn/cuda-9.0/7.0.3
+#module load cuda-3.0
+
+source /work/almosova/rl_venv/bin/activate
+
+python3 evaluate.py
+
+deactivate
+#tensorflow  job4.py
