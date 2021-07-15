@@ -1,6 +1,5 @@
 from typing import Dict, Tuple
 
-import numpy as np
 from human_friction.agents.bank import CentralBank
 from human_friction.agents.firm import Firm
 from human_friction.agents.household import HouseholdAgent
@@ -201,10 +200,13 @@ class NewKeynesMarket(BaseEnv):
         self.clear_dividends(self.firm.profit)
         self.clear_capital_market()
 
+        payed_wages = [agent.labor * wages[agent.agent_id] for agent in self.agents.values()]
+        hours_worked = [agent.labor for agent in self.agents.values()]
+
         obs = {}
         for agent in self.agents.values():
             obs[agent.agent_id] = {
-                "average_wage": np.mean([wage for wage in wages.values()]),
+                "average_wage": sum(payed_wages) / sum(hours_worked),
                 "budget": agent.budget,
                 "inflation": self.inflation,
                 "interest": self.interest,

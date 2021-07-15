@@ -190,3 +190,23 @@ def test_compute_rewards():
     rew = env.compute_rewards()
     agent_ids = list(env.agents.keys())
     assert rew[agent_ids[0]] == rew[agent_ids[1]]
+
+
+def test_generate_observations():
+    config = {"episode_length": 20, "n_agents": 3}
+    env = NewKeynesMarket(config)
+    env.reset()
+    actions = {"agent-0": [0.0, 0.5], "agent-1": [0.0, 0.3], "agent-2": [0.0, 0.1]}
+    obs = env.generate_observations(actions)
+    for agent_id, agent_obs in obs.items():
+        assert agent_obs["average_wage"] == 0.3
+
+    env.firm.labor_demand = 2.0
+    obs = env.generate_observations(actions)
+    for agent_id, agent_obs in obs.items():
+        assert agent_obs["average_wage"] == 0.2
+
+    env.firm.labor_demand = 1.5
+    obs = env.generate_observations(actions)
+    for agent_id, agent_obs in obs.items():
+        assert agent_obs["average_wage"] == (0.5 * 0.3 + 1.0 * 0.1) / 1.5
