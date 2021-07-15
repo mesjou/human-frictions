@@ -1,4 +1,3 @@
-import random
 from typing import Dict
 
 
@@ -106,7 +105,7 @@ class Firm(object):
     def sell_goods(self, demand: Dict) -> Dict:
         """
         Determine how much the firm sells to which agent.
-        The order of the selling process is randomly drawn.
+        The order of the selling process is order with by ascending demand.
         If the demand can not be satisfied the agent cannot consume.
         If the demand is to low not consumed goods get wasted and do not increase firm`s profit.
 
@@ -118,11 +117,10 @@ class Firm(object):
             consumption (dict): dictionary of {agent_id: consumption} with an entry for each agent that specifies
                 the amount the agent has consumed based on available supply of the firm.
         """
-        agent_ids = list(demand.keys())  # List of keys
-        random.shuffle(agent_ids)
+        sorted_demand = {k: v for k, v in sorted(demand.items(), key=lambda item: item[1])}
         consumption = {}
         sold_goods = 0.0
-        for agent_id in agent_ids:
+        for agent_id, wage in sorted_demand.items():
             agent_demand = demand[agent_id]
             if (self.production - sold_goods) >= agent_demand:
                 d = agent_demand

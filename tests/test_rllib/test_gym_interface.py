@@ -23,7 +23,7 @@ def test_env():
         assert isinstance(ob_next, dict)
 
 
-def _step():
+def test_step():
     config = {"episode_length": 20, "n_agents": 2, "seed": 1}
     rllib_env = RllibEnv(config)
     nk_env = NewKeynesMarket(config)
