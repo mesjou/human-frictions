@@ -1,28 +1,39 @@
 import random
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import Tuple
 
 import numpy as np
-from ray.rllib.env import MultiAgentEnv
 from ray.rllib.utils.typing import MultiAgentDict
 
 
-class BaseEnv(MultiAgentEnv):
+class BaseEnv(ABC):
     def __init__(self, config):
         """
-        :param config: environment configuration that specifies all adjustable parameters of the environment
+        Super class for environments that implements some basic functionality.
+
+        Args:
+            config (dict): A dictionary with configuration parameter {"parameter name": parameter value} specifying the
+                parameter value if it is in the dictionary.
+                n_agents (int): The number of household agents.
+                episode_length (int): Number of timesteps in a single episode.
+                seed (float, int): Seed value to use. Must be > 0.
         """
-        n_agents = config["n_agents"]
-        assert isinstance(n_agents, int)
+
+        n_agents = config.get("n_agents", None)
+        assert isinstance(n_agents, int), "Number of agents must be specified as int in config['n_agents']"
         assert n_agents >= 1
         self.n_agents = n_agents
 
-        episode_length = config["episode_length"]
-        assert isinstance(episode_length, int)
+        episode_length = config.get("episode_length", None)
+        assert isinstance(episode_length, int), "Episode length must be specified as int in config['episode_length']"
         assert episode_length >= 1
         self._episode_length = episode_length
 
-        self.timestep = 0
+        seed = config.get("seed", None)
+        if seed is not None:
+            self.seed(seed)
+
+        self.timestep: int = 0
 
     @property
     def episode_length(self):
@@ -43,25 +54,10 @@ class BaseEnv(MultiAgentEnv):
         np.random.seed(seed)
         random.seed(seed)
 
-    def reset(self):
-        self.timestep = 0
-        obs = self._generate_observations()
-        return obs
-
-    def step(self, action: MultiAgentDict) -> Tuple[MultiAgentDict, MultiAgentDict, MultiAgentDict, MultiAgentDict]:
-        self.timestep += 1
-
-        obs = self._generate_observations()
-        rewards = self._generate_rewards()
-        done = {"__all__": self.timestep >= self._episode_length}
-        info = {}
-
-        return obs, rewards, done, info
-
     @abstractmethod
-    def _generate_observations(self):
+    def reset(self):
         pass
 
     @abstractmethod
-    def _generate_rewards(self):
+    def step(self, action: MultiAgentDict) -> Tuple[MultiAgentDict, MultiAgentDict, MultiAgentDict, MultiAgentDict]:
         pass

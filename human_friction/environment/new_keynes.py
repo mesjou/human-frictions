@@ -1,16 +1,15 @@
-import random
 from typing import Dict, Tuple
 
 import numpy as np
 from human_friction.agents.bank import CentralBank
 from human_friction.agents.firm import Firm
 from human_friction.agents.household import HouseholdAgent
+from human_friction.environment.base_env import BaseEnv
 from human_friction.utils import rewards
-from ray.rllib.env import MultiAgentEnv
 from ray.rllib.utils.typing import MultiAgentDict
 
 
-class NewKeynesMarket(MultiAgentEnv):
+class NewKeynesMarket(BaseEnv):
     """
     New Keynes Environment class. Should be used to simulate labor supply and consume decision of households.
     Instantiates the households, firm and central bank.
@@ -28,6 +27,7 @@ class NewKeynesMarket(MultiAgentEnv):
                 init_budget (float): How much budget each household agent should have at beginning of an episode.
 
                 Env specific
+                seed (float, int): Seed value to use. Must be > 0.
                 init_unemployment (float): How much unemployment is at the beginning of an episode, default = 0.0.
                 init_inflation (float): How much inflation is at the beginning of an episode, default = 0.02.
                 init_interest (float): How much nominal interest is at the beginning of an episode, default = 1.02.
@@ -50,18 +50,7 @@ class NewKeynesMarket(MultiAgentEnv):
 
     def __init__(self, config):
 
-        # Non-optional parameters
-        # ----------
-
-        n_agents = config.get("n_agents", None)
-        assert isinstance(n_agents, int), "Number of agents must be specified as int in config['n_agents']"
-        assert n_agents >= 1
-        self.n_agents = n_agents
-
-        episode_length = config.get("episode_length", None)
-        assert isinstance(episode_length, int), "Episode length must be specified as int in config['episode_length']"
-        assert episode_length >= 1
-        self._episode_length = episode_length
+        super().__init__(config)
 
         # Optional parameters
         # ----------
@@ -124,7 +113,6 @@ class NewKeynesMarket(MultiAgentEnv):
         # Final setup of the environment
         # ----------
 
-        self.timestep: int = 0
         self.agents: Dict[str:HouseholdAgent] = {}
         self.firm: Firm = Firm(
             init_labor_demand=float(self.n_agents),
@@ -141,25 +129,6 @@ class NewKeynesMarket(MultiAgentEnv):
             phi_unemployment=phi_unemployment,
             phi_inflation=phi_inflation,
         )
-
-    @property
-    def episode_length(self):
-        """Length of an episode, in timesteps."""
-        return int(self._episode_length)
-
-    @staticmethod
-    def seed(seed):
-        """Sets the numpy and built-in random number generator seed.
-
-        :param seed: Seed value to use. Must be > 0. Converted to int
-                internally if provided value is a float.
-        """
-        assert isinstance(seed, (int, float))
-        seed = int(seed)
-        assert seed > 0
-
-        np.random.seed(seed)
-        random.seed(seed)
 
     def set_up_agents(self):
         """Initialize the agents and give them starting endowment."""
