@@ -11,7 +11,7 @@ def test_init_nk_env():
         "init_unemployment": 0.0,
         "init_inflation": 0.02,
         "init_interest": 1.02,
-        "technology": 0.5,
+        "technology": 1.0,
         "alpha": 0.25,
         "learning_rate": 0.01,
         "markup": 0.1,
@@ -28,7 +28,7 @@ def test_init_nk_env():
     assert env.unemployment == 0.0
     assert env.inflation == 0.02
     assert env.interest == 1.02
-    assert env.firm.technology == 0.5
+    assert env.firm.technology == 1.0
     assert env.firm.alpha == 0.25
     assert env.firm.learning_rate == 0.01
     assert env.firm.markup == 0.1
@@ -51,7 +51,7 @@ def test_init_nk_env():
     assert env.unemployment == 0.0
     assert env.inflation == 0.02
     assert env.interest == 1.02
-    assert env.firm.technology == 0.5
+    assert env.firm.technology == 1.0
     assert env.firm.alpha == 0.25
     assert env.firm.learning_rate == 0.01
     assert env.firm.markup == 0.1

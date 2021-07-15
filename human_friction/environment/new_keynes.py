@@ -72,13 +72,13 @@ class NewKeynesMarket(BaseEnv):
         assert isinstance(init_interest, float)
         self.interest = init_interest
 
-        technology = config.get("technology", 0.5)
+        technology = config.get("technology", 1.0)
         assert technology > 0.0
         assert isinstance(technology, float)
 
         alpha = config.get("alpha", 0.25)
         assert isinstance(alpha, float)
-        assert 0.0 < alpha <= 1.0
+        assert 0.0 <= alpha < 1.0
 
         learning_rate = config.get("learning_rate", 0.01)
         assert isinstance(learning_rate, float)
