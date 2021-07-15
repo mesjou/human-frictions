@@ -89,6 +89,7 @@ def test_sell_goods():
     demand = {"agent-0": 1.1, "agent-1": 0.5, "agent-2": 0.6}
     consumption = firm.sell_goods(demand)
     assert sum([c for c in consumption.values()]) == 2.0
+    assert pytest.approx(consumption) == {"agent-0": 0.9, "agent-1": 0.5, "agent-2": 0.6}
 
 
 def test_earn_profits():
