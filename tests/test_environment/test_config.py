@@ -8,6 +8,7 @@ def test_init_nk_env():
         "n_agents": 3,
         "episode_length": 15,
         "init_budget": 0.0,
+        "labor_coefficient": 0.0,
         "init_unemployment": 0.0,
         "init_inflation": 0.02,
         "init_interest": 1.02,
@@ -25,6 +26,7 @@ def test_init_nk_env():
     env = NewKeynesMarket(config)
     env.reset()
     assert env.episode_length == 15
+    assert env.labor_coefficient == 0.0
     assert env.unemployment == 0.0
     assert env.inflation == 0.02
     assert env.interest == 1.02
@@ -48,6 +50,7 @@ def test_init_nk_env():
     env = NewKeynesMarket(config_2)
     env.reset()
     assert env.episode_length == 10
+    assert env.labor_coefficient == 0.0
     assert env.unemployment == 0.0
     assert env.inflation == 0.02
     assert env.interest == 1.02
@@ -67,6 +70,7 @@ def test_init_nk_env():
     config_3 = {
         "n_agents": 3,
         "episode_length": 15,
+        "labor_coefficient": 0.5,
         "init_budget": 0.1,
         "init_unemployment": 0.1,
         "init_inflation": 0.03,
@@ -85,6 +89,7 @@ def test_init_nk_env():
     env = NewKeynesMarket(config_3)
     env.reset()
     assert env.unemployment == 0.1
+    assert env.labor_coefficient == 0.5
     assert env.inflation == 0.03
     assert env.interest == 1.03
     assert env.firm.technology == 0.6
@@ -119,6 +124,8 @@ def test_deny_wrong_values():
         NewKeynesMarket({"n_agents": 3, "episode_length": 15, "natural_unemployment": 1.1})
     with pytest.raises(Exception):
         NewKeynesMarket({"n_agents": 3, "episode_length": 15, "markup": -0.1})
+    with pytest.raises(Exception):
+        NewKeynesMarket({"n_agents": 3, "episode_length": 15, "labor_coefficient": -0.1})
 
 
 if __name__ == "__main__":

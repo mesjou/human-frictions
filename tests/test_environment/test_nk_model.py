@@ -15,7 +15,7 @@ def test_clear_labor_market():
     for agent in env.agents.values():
         assert agent.labor == 1.0
     assert env.firm.production > 0.0
-    assert env.inflation > 0.0
+    assert env.inflation != 0.0
     assert env.unemployment == 0.0
 
 
@@ -143,7 +143,9 @@ def test_clear_capital_market():
 
 
 def test_compute_rewards():
-    config = {"episode_length": 20, "n_agents": 2, "init_budget": 0.0}
+
+    # labor comes with disutility
+    config = {"episode_length": 20, "n_agents": 2, "labor_coefficient": 1.0}
     env = NewKeynesMarket(config)
     env.reset()
     for agent in env.agents.values():
@@ -168,3 +170,23 @@ def test_compute_rewards():
     rew = env.compute_rewards()
     agent_ids = list(env.agents.keys())
     assert rew[agent_ids[0]] > rew[agent_ids[1]]
+
+    # labor is for free, no utility loss
+    config = {"episode_length": 20, "n_agents": 2, "labor_weight": 0.0}
+    env = NewKeynesMarket(config)
+    env.reset()
+    for agent in env.agents.values():
+        agent.labor = 1.0
+        agent.consumption = 1.0
+    rew = env.compute_rewards()
+    for agent_id in env.agents.keys():
+        assert rew[agent_id] > 0.0
+
+    i = 1.0
+    for agent in env.agents.values():
+        agent.labor = i
+        agent.consumption = 1.0
+        i += 1.0
+    rew = env.compute_rewards()
+    agent_ids = list(env.agents.keys())
+    assert rew[agent_ids[0]] == rew[agent_ids[1]]
