@@ -25,6 +25,7 @@ class NewKeynesMarket(BaseEnv):
             The dictionary keys could include:
                 Agent specific
                 init_budget (float): How much budget each household agent should have at beginning of an episode.
+                labor_coefficient (float): How much negative utility from working occurs.
 
                 Env specific
                 seed (float, int): Seed value to use. Must be > 0.
@@ -58,6 +59,11 @@ class NewKeynesMarket(BaseEnv):
         init_budget = config.get("init_budget", 0.0)
         assert isinstance(init_budget, float)
         self.init_budget = init_budget
+
+        labor_coefficient = config.get("labor_coefficient", 0.0)
+        assert isinstance(labor_coefficient, float)
+        assert labor_coefficient >= 0.0
+        self.labor_coefficient = labor_coefficient
 
         init_unemployment = config.get("init_unemployment", 0.0)
         assert isinstance(init_unemployment, float)
@@ -212,7 +218,9 @@ class NewKeynesMarket(BaseEnv):
     def compute_rewards(self) -> MultiAgentDict:
         rew = {}
         for agent in self.agents.values():
-            rew[agent.agent_id] = rewards.utility(labor=agent.labor, consumption=agent.consumption)
+            rew[agent.agent_id] = rewards.utility(
+                labor=agent.labor, consumption=agent.consumption, labor_coefficient=self.labor_coefficient
+            )
         return rew
 
     def parse_actions(self, actions: MultiAgentDict) -> Tuple[MultiAgentDict, MultiAgentDict]:
@@ -254,7 +262,7 @@ class NewKeynesMarket(BaseEnv):
         """Agents earn interest on their budget balance which is specified by central bank"""
         self.interest = self.central_bank.set_interest_rate(unemployment=self.unemployment, inflation=self.inflation)
 
-        # assert self.interest >= 1.0, "Negative interest is not allowed"
+        assert self.interest >= 1.0, "Negative interest is not allowed"
         for agent in self.agents.values():
             agent.budget = self.interest * agent.budget
 
