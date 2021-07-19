@@ -6,7 +6,7 @@ from human_friction.agents.household import HouseholdAgent
 from human_friction.environment.base_env import BaseEnv
 from human_friction.utils import rewards
 from ray.rllib.utils.typing import MultiAgentDict
-
+import numpy as np
 
 class NewKeynesMarket(BaseEnv):
     """
@@ -155,11 +155,11 @@ class NewKeynesMarket(BaseEnv):
         obs = {}
         for agent in self.agents.values():
             obs[agent.agent_id] = {
-                "average_wage": 0.0,
+                "average_wage": np.float32 (0.01),
                 "budget": self.init_budget,
-                "inflation": 0.0,
-                "interest": 1.0,
-                "unemployment": 0.0,
+                "inflation": np.float32 (0.0),
+                "interest": np.float32 (1.0),
+                "unemployment": np.float32 (0.01),
             }
         return obs
 
