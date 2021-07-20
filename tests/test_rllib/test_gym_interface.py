@@ -40,3 +40,13 @@ def test_step():
         assert ob_next_rllib == ob_next_nk
         assert r_rllib == r_nk
         assert done_rllib == done_nk
+
+
+def test_config():
+    config = {"episode_length": 20, "n_agents": 2, "init_budget": 3.0, "labor_coefficient": 0.5}
+    rllib_env = RllibEnv(config)
+    ob = rllib_env.reset()  # noqa E841
+    action = act(rllib_env)
+    ob_next, r, done, _ = rllib_env.step(action)
+    assert rllib_env.env.labor_coefficient == 0.5
+    assert rllib_env.env.init_budget == 3.0
