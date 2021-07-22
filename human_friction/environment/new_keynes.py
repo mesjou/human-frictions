@@ -246,8 +246,10 @@ class NewKeynesMarket(BaseEnv):
     def clear_goods_market(self, demand: MultiAgentDict):
         """Household wants to buy goods from the firm
 
-        :param demand: (dict) defines how much each agent wants to consume in real values
+        Args:
+            demand: (MultiAgentDict) defines how much each agent wants to consume in real values
         """
+        demand = self.mask_demand(demand)
         consumption = self.firm.sell_goods(demand)
         for agent in self.agents.values():
             agent.consume(consumption[agent.agent_id], self.firm.price)
@@ -271,3 +273,20 @@ class NewKeynesMarket(BaseEnv):
     def get_unemployment(self):
         assert self.firm.labor_demand > 0.0
         return (self.n_agents - self.firm.labor_demand) / self.n_agents
+
+    def mask_demand(self, demand: MultiAgentDict) -> MultiAgentDict:
+        """
+        Check if agent has enough budget for the desired consumption.
+        If budget is not high enough to fulfill consumption the agent is not allowed to buy something this period.
+        Demand is set to 0.
+
+        Args:
+            demand (MultiAgentDict): Dictionary of {agent_id: desired_consumption}
+
+        Returns:
+            masked_demand (MultiAgentDict): Dictionary of {agent_id: possible_consumption}
+        """
+        for agent in self.agents.values():
+            if agent.budget < demand[agent.agent_id] * self.firm.price:
+                demand[agent.agent_id] = 0.0
+        return demand

@@ -38,7 +38,7 @@ def test_get_unemployment():
 
 
 def test_clear_goods_market():
-    config = {"episode_length": 20, "n_agents": 2, "init_budget": 0.0}
+    config = {"episode_length": 20, "n_agents": 2, "init_budget": 20.0}
     env = NewKeynesMarket(config)
     env.reset()
     env.firm.price = 1.0
@@ -49,7 +49,7 @@ def test_clear_goods_market():
     env.firm.average_profit = 1.0
     env.clear_goods_market(demand)
     assert env.agents["agent-0"].budget == env.agents["agent-1"].budget
-    assert env.agents["agent-0"].budget == 0.0
+    assert env.agents["agent-0"].budget == 20.0
     assert env.firm.profit == 0.0
     assert env.firm.labor_demand == 2 * 0.99
 
@@ -57,11 +57,34 @@ def test_clear_goods_market():
     env.firm.production = 1.0
     env.clear_goods_market(demand)
     assert env.agents["agent-0"].budget < env.agents["agent-1"].budget
-    assert env.agents["agent-0"].budget < 0.0
-    assert env.agents["agent-1"].budget < 0.0
+    assert env.agents["agent-0"].budget < 20.0
+    assert env.agents["agent-1"].budget < 20.0
     assert env.agents["agent-0"].consumption > env.agents["agent-1"].consumption
     assert env.firm.profit == 0.8
     assert env.firm.labor_demand == 2 * 0.99 * 1.01
+
+    # agent-0 has no budget
+    env.agents["agent-0"].budget = 0.0
+    env.firm.production = 1.0
+    env.clear_goods_market(demand)
+    assert env.agents["agent-0"].budget == 0.0
+    assert env.agents["agent-1"].budget < 20.0
+    assert env.agents["agent-1"].budget > 0.0
+    assert env.agents["agent-0"].consumption == 0.0
+    assert env.agents["agent-1"].consumption == 0.3
+    assert env.firm.profit == 0.3
+
+    # agent-0 has not enough budget
+    env.agents["agent-0"].budget = 0.22
+    env.firm.price = 0.5
+    env.firm.production = 1.0
+    env.clear_goods_market(demand)
+    assert env.agents["agent-0"].budget == 0.22
+    assert env.agents["agent-1"].budget < 20.0
+    assert env.agents["agent-1"].budget > 0.0
+    assert env.agents["agent-0"].consumption == 0.0
+    assert env.agents["agent-1"].consumption == 0.3
+    assert env.firm.profit == 0.15
 
 
 def test_clear_dividends():
