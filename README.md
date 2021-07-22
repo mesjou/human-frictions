@@ -39,6 +39,21 @@ Docker must be build to reflect changes.
 docker run human-friction:1.0
 ```
 
+### Alternatively: Virtualenv instead of Docker
+
+```bash
+python3 -m venv venv
+. venv/bin/activate
+pip3 install --upgrade pip setuptools wheel
+pip3 install -e .
+pip3 install -r requirements.txt
+```
+
+Then you can run a training script from command line, e.g.:
+```bash
+python3 train.py
+```
+
 #### Pre-commit
 
 Make sure that code style follows our guidlines by installing pre-commit:
