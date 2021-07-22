@@ -233,3 +233,32 @@ def test_generate_observations():
     obs = env.generate_observations(actions)
     for agent_id, agent_obs in obs.items():
         assert agent_obs["average_wage"] == (0.5 * 0.3 + 1.0 * 0.1) / 1.5
+
+
+def test_mask_demand():
+    env = NewKeynesMarket({"episode_length": 20, "n_agents": 2, "init_budget": 1.0})
+    env.reset()
+    env.firm.price = 1.0
+    demand = {"agent-0": 0.0, "agent-1": 0.0}
+    masked_demand = env.mask_demand(demand)
+    assert masked_demand == demand
+
+    demand = {"agent-0": 0.5, "agent-1": 0.999}
+    masked_demand = env.mask_demand(demand)
+    assert masked_demand == demand
+
+    demand = {"agent-0": 1.0, "agent-1": 1.01}
+    masked_demand = env.mask_demand(demand)
+    assert masked_demand == {"agent-0": 1.0, "agent-1": 0.0}
+
+    env.firm.price = 1.01
+    demand = {"agent-0": 1.0, "agent-1": 1.01}
+    masked_demand = env.mask_demand(demand)
+    assert masked_demand == {"agent-0": 0.0, "agent-1": 0.0}
+
+    env.firm.price = 1.0
+    env.agents["agent-0"].budget = 0.9
+    env.agents["agent-1"].budget = -0.2
+    demand = {"agent-0": 1.0, "agent-1": 0.5}
+    masked_demand = env.mask_demand(demand)
+    assert masked_demand == {"agent-0": 0.0, "agent-1": 0.0}
