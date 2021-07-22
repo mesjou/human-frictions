@@ -5,7 +5,7 @@ from human_friction.rllib.rllib_env import RllibEnv
 from ray import tune
 from ray.rllib.agents.ppo import PPOTrainer
 
-seeds = list(range(1))
+# seeds = list(range(1))
 env_config = {
     "episode_length": 200,
     "n_agents": 2,
@@ -21,7 +21,7 @@ rllib_config = {
     "train_batch_size": 256,
     "model": {"fcnet_hiddens": [50, 50]},
     "lr": 5e-3,
-    "seed": tune.grid_search(seeds),
+    # "seed": tune.grid_search(seeds),
     "num_gpus": int(os.environ.get("RLLIB_NUM_GPUS", "0")),
     "framework": "tf",
 }
@@ -37,5 +37,5 @@ def run(debug=True, iteration=200):
 
 if __name__ == "__main__":
     ray.init()
-    run()
+    run(debug=False)
     ray.shutdown()
