@@ -249,8 +249,8 @@ class NewKeynesMarket(BaseEnv):
         Args:
             demand: (MultiAgentDict) defines how much each agent wants to consume in real values
         """
-        demand = self.mask_demand(demand)
-        consumption = self.firm.sell_goods(demand)
+        masked_demand = self.mask_demand(demand)
+        consumption = self.firm.sell_goods(masked_demand)
         for agent in self.agents.values():
             agent.consume(consumption[agent.agent_id], self.firm.price)
         self.firm.earn_profits(consumption)
