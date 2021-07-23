@@ -55,7 +55,7 @@ class NewKeynesMarket(BaseEnv):
         # Optional parameters
         # ----------
 
-        init_budget = config.get("init_budget", 10.0)
+        init_budget = config.get("init_budget", 0.0)
         assert isinstance(init_budget, float)
         self.init_budget = init_budget
 
@@ -155,11 +155,11 @@ class NewKeynesMarket(BaseEnv):
         obs = {}
         for agent in self.agents.values():
             obs[agent.agent_id] = {
-                "average_wage": np.float32 (10.0),
+                "average_wage": 0.0,
                 "budget": self.init_budget,
-                "inflation": np.float32 (0.0),
-                "interest": np.float32 (1.0),
-                "unemployment": np.float32 (0.05),
+                "inflation": 0.0,
+                "interest": 1.0,
+                "unemployment": 0.0,
             }
         return obs
 
