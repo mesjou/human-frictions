@@ -6,7 +6,7 @@ from human_friction.agents.household import HouseholdAgent
 from human_friction.environment.base_env import BaseEnv
 from human_friction.utils import rewards
 from ray.rllib.utils.typing import MultiAgentDict
-
+import numpy as np
 
 class NewKeynesMarket(BaseEnv):
     """
@@ -223,6 +223,9 @@ class NewKeynesMarket(BaseEnv):
             rew[agent.agent_id] = rewards.utility(
                 labor=agent.labor, consumption=agent.consumption, labor_coefficient=self.labor_coefficient
             )
+
+            if agent.budget <= 0 and self.timestep == self._episode_length:
+                rew[agent.agent_id] = -60
         return rew
 
     def parse_actions(self, actions: MultiAgentDict) -> Tuple[MultiAgentDict, MultiAgentDict]:

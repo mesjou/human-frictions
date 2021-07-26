@@ -27,11 +27,17 @@ rllib_config = {
 }
 
 
-def run(debug=True, iteration=200):
-    stop = {"training_iteration": 2 if debug else iteration}
+def run(debug=False, iteration=200):
+    stop = {"training_iteration": 20 if debug else iteration}
     tune_analysis = tune.run(
-        PPOTrainer, config=rllib_config, stop=stop, checkpoint_freq=0, checkpoint_at_end=True, name="PPO_New_Keynes"
+        PPOTrainer, config=rllib_config, stop=stop,
+        checkpoint_freq=0, checkpoint_at_end=True, name="PPO_New_Keynes",
+        local_dir = os.path.join(os.getcwd(),"human_friction/checkpoints")
     )
+
+    with open("human_friction/last_checkpoint_path","w") as f:
+        f.write(tune_analysis.get_last_checkpoint())
+
     return tune_analysis
 
 
