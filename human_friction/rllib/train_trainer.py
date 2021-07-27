@@ -26,7 +26,7 @@ rllib_config = {
     # (0.0 centered with small stddev; only affecting Box components) and
     # only unsquash actions (and clip just in case) to the bounds of
     # env's action space before sending actions back to the env.
-    "normalize_actions": True,
+    "normalize_actions": False,
     # Whether to use "rllib" or "deepmind" preprocessors by default
     "preprocessor_pref": "deepmind",
     # === Settings for Rollout Worker processes ===
@@ -231,15 +231,15 @@ rllib_config = {
 }
 
 
-def run(debug=False, iteration=200):
-    stop = {"training_iteration": 20 if debug else iteration}
+def run(debug=False, iteration=20000):
+    stop = {"training_iteration": 2 if debug else iteration}
     tune_analysis = tune.run(
         PPOTrainer, config=rllib_config, stop=stop,
         checkpoint_freq=0, checkpoint_at_end=True, name="PPO_New_Keynes",
         local_dir = os.path.join(os.getcwd(),"human_friction/checkpoints")
     )
 
-    with open("human_friction/last_checkpoint_path","w") as f:
+    with open("human_friction/results/last_checkpoint_path","w") as f:
         f.write(tune_analysis.get_last_checkpoint())
 
     return tune_analysis

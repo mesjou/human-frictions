@@ -16,7 +16,7 @@ def plot_rewards(path):
     Alternatively run tensorborad --logdir path
     """
     rewards = pd.read_csv(os.path.join(path,'progress.csv'), usecols=[0, 1, 2])
-    rewards.iloc[::50,:].plot(xlabel="Episode", ylabel="Reward")
+    rewards.iloc[500::50,:].plot(xlabel="Episode", ylabel="Reward")
     plt.show()
 
 if __name__ == "__main__":
