@@ -8,7 +8,7 @@ from ray.rllib.agents.ppo import PPOTrainer
 # seeds = list(range(1))
 env_config = {
     "episode_length": 800,
-    "n_agents": 4,
+    "n_agents": 1,
 }
 
 rllib_config = {
@@ -234,7 +234,7 @@ rllib_config = {
 def run(debug=False, iteration=20000):
     stop = {"training_iteration": 2 if debug else iteration}
     tune_analysis = tune.run(
-        PPOTrainer, config=rllib_config, stop=stop,
+        PPOTrainer, config=rllib_config, stop=stop, max_failures = 3, resume = True,
         checkpoint_freq=0, checkpoint_at_end=True, name="PPO_New_Keynes",
         local_dir = os.path.join(os.getcwd(),"human_friction/checkpoints")
     )

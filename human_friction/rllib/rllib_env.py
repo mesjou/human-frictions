@@ -16,7 +16,7 @@ OBS_SPACE_AGENT = spaces.Dict(
 
 # Actions of the format consumption x%, reservation wage x%
 #ACT_SPACE_AGENT = spaces.Box(low=np.array([0.0, 0.000001]), high=np.array([np.inf, np.inf]), dtype=np.float32)
-ACT_SPACE_AGENT = spaces.Box(low=np.array([1, 1]), high=np.array([100, 100]), dtype=np.float32)
+ACT_SPACE_AGENT = spaces.Box(low=np.array([1, 1]), high=np.array([100, 1]), dtype=np.float32)
 
 
 class RllibEnv(MultiAgentEnv):
