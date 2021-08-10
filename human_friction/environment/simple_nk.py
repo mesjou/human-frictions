@@ -72,12 +72,23 @@ class SimpleNewKeynes(NewKeynesMarket):
 
     def parse_actions(self, actions: MultiAgentDict) -> Tuple[MultiAgentDict, MultiAgentDict]:
         wages = {}
-        consumption = {}
+        consumptions = {}
         for agent in self.agents.values():
             agent_action = actions[agent.agent_id]
-            consumption[agent.agent_id] = agent_action[0]
-            wages[agent.agent_id] = agent_action[1]
-        return wages, consumption
+            wage, consumption = self.map_action_to_values(agent_action)
+            wages[agent.agent_id] = wage
+            consumptions[agent.agent_id] = consumption
+        return wages, consumptions
+
+    def map_action_to_values(self, action_idx, n_c_actions=10, n_w_actions=5):
+
+        c_index = math.floor(action_idx / n_w_actions)
+        w_index = action_idx - c_index * n_w_actions
+
+        consumption = np.linspace(0.01, self.get_max_consumption(), n_c_actions)[c_index]
+        wage_increase = np.linspace(0.0, 1.0, n_w_actions)[w_index]
+
+        return wage_increase, consumption
 
     def clear_markets(self, demand: MultiAgentDict, wages: MultiAgentDict):
         """Household wants to buy goods from the firm
