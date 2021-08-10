@@ -44,17 +44,19 @@ class SimpleNewKeynes(NewKeynesMarket):
         """
 
         # 1. - 3.
-        wages, demand = self.parse_actions(actions)
+        wage_increases, demand = self.parse_actions(actions)
+        wages = {agent.agent_id: agent.wage * (1 + wage_increases[agent.agent_id]) for agent in self.agents.values()}
         self.clear_markets(demand, wages)
 
         # 4. - 5.
         self.clear_capital_market()
 
         obs = {}
+
         for agent in self.agents.values():
 
             obs[agent.agent_id] = {
-                "average_wage_increase": np.mean([wages[agent.agent_id] for agent in self.agents.values()]),
+                "average_wage_increase": np.mean([wage_increases[agent.agent_id] for agent in self.agents.values()]),
                 "average_consumption": np.mean([demand[agent.agent_id] for agent in self.agents.values()]),
                 "budget": agent.budget,
                 "inflation": self.inflation,
@@ -74,7 +76,7 @@ class SimpleNewKeynes(NewKeynesMarket):
         for agent in self.agents.values():
             agent_action = actions[agent.agent_id]
             consumption[agent.agent_id] = agent_action[0]
-            wages[agent.agent_id] = agent.wage * (1 + agent_action[1])
+            wages[agent.agent_id] = agent_action[1]
         return wages, consumption
 
     def clear_markets(self, demand: MultiAgentDict, wages: MultiAgentDict):

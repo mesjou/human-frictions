@@ -1,7 +1,7 @@
 from typing import Dict
 
 
-class Firm(object):
+class LearningFirm(object):
     def __init__(
         self,
         init_labor_demand: float,
