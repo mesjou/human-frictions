@@ -1,39 +1,39 @@
 import pytest
 
 import numpy as np
-from human_friction.agents.firm import Firm
+from human_friction.agents.learningfirm import LearningFirm
 
 
 def test_hire_worker():
     """Test firm for 3 agents"""
-    firm = Firm(init_labor_demand=3.0)
+    firm = LearningFirm(init_labor_demand=3.0)
     labor_demand = firm.hire_worker({"agent-0": 1.0, "agent-1": 2.0, "agent-2": 3.0})
     assert labor_demand == {"agent-0": 1.0, "agent-1": 1.0, "agent-2": 1.0}
     assert firm.profit == -6.0
 
-    firm = Firm(init_labor_demand=2.0)
+    firm = LearningFirm(init_labor_demand=2.0)
     labor_demand = firm.hire_worker({"agent-0": 1.0, "agent-1": 2.0, "agent-2": 3.0})
     assert labor_demand == {"agent-0": 1.0, "agent-1": 1.0, "agent-2": 0.0}
     assert firm.profit == -3.0
 
-    firm = Firm(init_labor_demand=1.5)
+    firm = LearningFirm(init_labor_demand=1.5)
     labor_demand = firm.hire_worker({"agent-0": 1.0, "agent-1": 2.0, "agent-2": 3.0})
     assert labor_demand == {"agent-0": 1.0, "agent-1": 0.5, "agent-2": 0.0}
     assert firm.profit == -2.0
 
-    firm = Firm(init_labor_demand=0.9)
+    firm = LearningFirm(init_labor_demand=0.9)
     labor_demand = firm.hire_worker({"agent-0": 1.0, "agent-1": 2.0, "agent-2": 3.0})
     assert labor_demand == {"agent-0": 0.9, "agent-1": 0.0, "agent-2": 0.0}
     assert firm.profit == -0.9
 
 
 def test_produce():
-    firm = Firm(init_labor_demand=3.0, technology=0.5, alpha=0.0)
+    firm = LearningFirm(init_labor_demand=3.0, technology=0.5, alpha=0.0)
     occupation = {"agent-0": 1.0, "agent-1": 0.4, "agent-2": 0.0}
     firm.produce(occupation)
     assert firm.production == 0.7
 
-    firm = Firm(init_labor_demand=3.0, technology=0.5, alpha=1.0)
+    firm = LearningFirm(init_labor_demand=3.0, technology=0.5, alpha=1.0)
     firm.produce(occupation)
     assert firm.production == 0.5
 
@@ -43,7 +43,7 @@ def test_produce():
 
 
 def test_set_price():
-    firm = Firm(init_labor_demand=3.0, markup=0.2, alpha=0.5)
+    firm = LearningFirm(init_labor_demand=3.0, markup=0.2, alpha=0.5)
     firm.production = 1.0
     firm.price = 1.0
     occupation = {"agent-0": 1.0, "agent-1": 0.4, "agent-2": 0.0}
@@ -52,7 +52,7 @@ def test_set_price():
     assert firm.price == 4.32
     assert np.round(inflation, 6) == 3.32
 
-    firm = Firm(init_labor_demand=3.0, markup=0.2, alpha=0.5)
+    firm = LearningFirm(init_labor_demand=3.0, markup=0.2, alpha=0.5)
     firm.production = 2.0
     firm.price = 1.0
     occupation = {"agent-0": 1.0, "agent-1": 0.4, "agent-2": 0.0}
@@ -66,25 +66,25 @@ def test_set_price():
 
 
 def test_sell_goods():
-    firm = Firm(init_labor_demand=3.0, markup=0.2, alpha=0.5)
+    firm = LearningFirm(init_labor_demand=3.0, markup=0.2, alpha=0.5)
     firm.production = 2.0
     demand = {"agent-0": 1.0, "agent-1": 0.4, "agent-2": 0.1}
     consumption = firm.sell_goods(demand)
     assert consumption == demand
 
-    firm = Firm(init_labor_demand=3.0, markup=0.2, alpha=0.5)
+    firm = LearningFirm(init_labor_demand=3.0, markup=0.2, alpha=0.5)
     firm.production = 0.0
     demand = {"agent-0": 1.0, "agent-1": 0.4, "agent-2": 0.1}
     consumption = firm.sell_goods(demand)
     assert consumption == {"agent-0": 0.0, "agent-1": 0.0, "agent-2": 0.0}
 
-    firm = Firm(init_labor_demand=0.0, markup=0.2, alpha=0.5)
+    firm = LearningFirm(init_labor_demand=0.0, markup=0.2, alpha=0.5)
     firm.production = 2.0
     demand = {"agent-0": 0.0, "agent-1": 0.0, "agent-2": 0.0}
     consumption = firm.sell_goods(demand)
     assert consumption == demand
 
-    firm = Firm(init_labor_demand=0.0, markup=0.2, alpha=0.5)
+    firm = LearningFirm(init_labor_demand=0.0, markup=0.2, alpha=0.5)
     firm.production = 2.0
     demand = {"agent-0": 1.1, "agent-1": 0.5, "agent-2": 0.6}
     consumption = firm.sell_goods(demand)
@@ -93,13 +93,13 @@ def test_sell_goods():
 
 
 def test_earn_profits():
-    firm = Firm(init_labor_demand=0.0, markup=0.2, alpha=0.5)
+    firm = LearningFirm(init_labor_demand=0.0, markup=0.2, alpha=0.5)
     firm.price = 1.0
     consumption = {"agent-0": 1.1, "agent-1": 0.5, "agent-2": 0.6}
     firm.earn_profits(consumption)
     assert firm.profit == 2.2
 
-    firm = Firm(init_labor_demand=0.0, markup=0.2, alpha=0.5)
+    firm = LearningFirm(init_labor_demand=0.0, markup=0.2, alpha=0.5)
     firm.price = 1.0
     consumption = {"agent-0": 0.0, "agent-1": 0.0, "agent-2": 0.0}
     firm.earn_profits(consumption)
@@ -111,31 +111,31 @@ def test_earn_profits():
 
 
 def test_learn():
-    firm = Firm(init_labor_demand=3.0, learning_rate=0.5)
+    firm = LearningFirm(init_labor_demand=3.0, learning_rate=0.5)
     firm.profit = 1.0
     firm.average_profit = 0.0
     firm.learn(max_labor=3.0)
     assert firm.labor_demand == 3.0
 
-    firm = Firm(init_labor_demand=3.0, learning_rate=0.5)
+    firm = LearningFirm(init_labor_demand=3.0, learning_rate=0.5)
     firm.profit = 1.0
     firm.average_profit = 0.0
     firm.learn(max_labor=2.0)
     assert firm.labor_demand == 2.0
 
-    firm = Firm(init_labor_demand=1.0, learning_rate=0.5)
+    firm = LearningFirm(init_labor_demand=1.0, learning_rate=0.5)
     firm.profit = 0.9
     firm.average_profit = 1.0
     firm.learn(max_labor=3.0)
     assert firm.labor_demand == 0.5
 
-    firm = Firm(init_labor_demand=1.0, learning_rate=0.5)
+    firm = LearningFirm(init_labor_demand=1.0, learning_rate=0.5)
     firm.profit = 1.1
     firm.average_profit = 1.0
     firm.learn(max_labor=3.0)
     assert firm.labor_demand == 1.5
 
-    firm = Firm(init_labor_demand=2.5, learning_rate=0.5)
+    firm = LearningFirm(init_labor_demand=2.5, learning_rate=0.5)
     firm.profit = 1.1
     firm.average_profit = 1.0
     firm.learn(max_labor=3.0)
@@ -146,19 +146,19 @@ def test_learn():
 
 
 def test_update_average_profit():
-    firm = Firm(init_labor_demand=2.0, memory=0.5)
+    firm = LearningFirm(init_labor_demand=2.0, memory=0.5)
     firm.profit = 1.0
     firm.average_profit = 0.0
     firm.update_average_profit()
     assert firm.average_profit == 0.5
 
-    firm = Firm(init_labor_demand=2.0, memory=0.5)
+    firm = LearningFirm(init_labor_demand=2.0, memory=0.5)
     firm.profit = 0.0
     firm.average_profit = 0.0
     firm.update_average_profit()
     assert firm.average_profit == 0.0
 
-    firm = Firm(init_labor_demand=2.0, memory=0.0)
+    firm = LearningFirm(init_labor_demand=2.0, memory=0.0)
     firm.profit = 10.0
     firm.average_profit = 0.0
     firm.update_average_profit()
