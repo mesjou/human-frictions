@@ -2,11 +2,15 @@ from human_friction.agents.base_agent import Agent
 
 
 class HouseholdAgent(Agent):
-    def __init__(self, agent_id: str, budget: float):
+    def __init__(self, agent_id: str, budget: float, wage: float = 0.0):
         super().__init__(agent_id)
 
         assert isinstance(budget, float)
         self.budget: float = budget
+
+        assert isinstance(wage, float)
+        self.wage = wage
+
         self.labor: float = 0.0
         self.consumption: float = 0.0
 
@@ -20,5 +24,6 @@ class HouseholdAgent(Agent):
     def earn(self, hours_worked: float, wage: float):
         assert hours_worked >= 0.0
         assert wage >= 0.0
+        self.wage = wage
         self.labor = hours_worked
         self.budget += hours_worked * wage

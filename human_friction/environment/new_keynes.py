@@ -1,12 +1,12 @@
 from typing import Dict, Tuple
 
 from human_friction.agents.bank import CentralBank
-from human_friction.agents.firm import Firm
 from human_friction.agents.household import HouseholdAgent
+from human_friction.agents.learningfirm import LearningFirm
 from human_friction.environment.base_env import BaseEnv
 from human_friction.utils import rewards
 from ray.rllib.utils.typing import MultiAgentDict
-import numpy as np
+
 
 class NewKeynesMarket(BaseEnv):
     """
@@ -58,6 +58,11 @@ class NewKeynesMarket(BaseEnv):
         init_budget = config.get("init_budget", 0.0)
         assert isinstance(init_budget, float)
         self.init_budget = init_budget
+
+        init_wage = config.get("init_wage", 0.5)
+        assert isinstance(init_wage, float)
+        assert init_wage > 0.0
+        self.init_wage = init_wage
 
         labor_coefficient = config.get("labor_coefficient", 0.0)
         assert isinstance(labor_coefficient, float)
@@ -119,7 +124,7 @@ class NewKeynesMarket(BaseEnv):
         # ----------
 
         self.agents: Dict[str:HouseholdAgent] = {}
-        self.firm: Firm = Firm(
+        self.firm: LearningFirm = LearningFirm(
             init_labor_demand=float(self.n_agents),
             technology=technology,
             alpha=alpha,
@@ -139,7 +144,7 @@ class NewKeynesMarket(BaseEnv):
         """Initialize the agents and give them starting endowment."""
         for idx in range(self.n_agents):
             agent_id = "agent-" + str(idx)
-            agent = HouseholdAgent(agent_id, self.init_budget)
+            agent = HouseholdAgent(agent_id, self.init_budget, self.init_wage)
             self.agents[agent_id] = agent
 
     def reset(self):
