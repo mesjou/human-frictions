@@ -143,13 +143,32 @@ def test_compute_rewards():
 
 
 def test_generate_observations():
-    config = {"episode_length": 20, "n_agents": 3}
+    config = {"episode_length": 20, "n_agents": 3, "alpha": 0.0}
     env = SimpleNewKeynes(config)
     env.reset()
-    actions = {"agent-0": [0.1, 0.5], "agent-1": [0.0, 0.3], "agent-2": [0.0, 0.1]}
+    actions = {"agent-0": 0, "agent-1": 2, "agent-2": 1}
     obs = env.generate_observations(actions)
     for agent_id, agent_obs in obs.items():
-        assert agent_obs["average_wage_increase"] == 0.3
+        assert agent_obs["average_wage_increase"] == 0.25
+        assert agent_obs["average_consumption"] == 0.01
+
+    actions = {"agent-0": 40, "agent-1": 42, "agent-2": 41}
+    obs = env.generate_observations(actions)
+    for agent_id, agent_obs in obs.items():
+        assert agent_obs["average_wage_increase"] == 0.25
+        assert agent_obs["average_consumption"] == 0.01 + (1.0 - 0.01) / 9 * 8
+
+    actions = {"agent-0": 40, "agent-1": 45, "agent-2": 20}
+    obs = env.generate_observations(actions)
+    for agent_id, agent_obs in obs.items():
+        assert agent_obs["average_wage_increase"] == 0.0
+        assert agent_obs["average_consumption"] == np.mean([0.01 + (1 - 0.01) / 9 * 8, 1.0, 0.01 + (1 - 0.01) / 9 * 4])
+
+    actions = {"agent-0": 49, "agent-1": 44, "agent-2": 4}
+    obs = env.generate_observations(actions)
+    for agent_id, agent_obs in obs.items():
+        assert agent_obs["average_wage_increase"] == 1.0
+        assert pytest.approx(agent_obs["average_consumption"]) == np.mean([0.01, 0.01 + (1 - 0.01) / 9 * 8, 1])
 
     # TODO think if we should base observation on average wage increase that was realized
     # env.firm.labor_demand = 2.0
