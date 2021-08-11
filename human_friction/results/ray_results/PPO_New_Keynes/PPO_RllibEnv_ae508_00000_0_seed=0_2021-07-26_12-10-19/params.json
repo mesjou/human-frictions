@@ -1,0 +1,19 @@
+{
+  "env": "<class 'human_friction.rllib.rllib_env.RllibEnv'>",
+  "env_config": {
+    "episode_length": 200,
+    "n_agents": 2
+  },
+  "framework": "tf",
+  "lr": 0.005,
+  "model": {
+    "fcnet_hiddens": [
+      50,
+      50
+    ]
+  },
+  "num_gpus": 0,
+  "rollout_fragment_length": 128,
+  "seed": 0,
+  "train_batch_size": 256
+}

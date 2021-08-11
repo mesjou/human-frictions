@@ -1,0 +1,7 @@
+{
+  "env": "<class 'human_friction.rllib.helper.SimpleRllibEnv'>",
+  "env_config": {
+    "episode_length": 5,
+    "n_agents": 1
+  }
+}
