@@ -4,6 +4,7 @@ from typing import Tuple
 import numpy as np
 from human_friction.agents.nonprofitfirm import SimpleFirm
 from human_friction.environment.new_keynes import NewKeynesMarket
+from human_friction.utils.annotations import override
 from ray.rllib.utils.typing import MultiAgentDict
 
 
@@ -25,6 +26,32 @@ class SimpleNewKeynes(NewKeynesMarket):
     def get_max_consumption(self):
         return self.firm.technology * self.n_agents ** (-self.firm.alpha)
 
+    def reset(self):
+        # todo make this better!
+        """Reset the environment.
+
+        This method is performed in between rollouts. It resets the state of
+        the environment.
+
+        """
+        self.timestep = 0
+        self.agents = {}
+        self.set_up_agents()
+        obs = {}
+        for agent in self.agents.values():
+            obs[agent.agent_id] = {
+                "average_wage_increase": 0.02,
+                "average_consumption": 0.05,
+                "budget": self.init_budget,
+                "inflation": 0.01,
+                "employed_hours": 0.9,
+                "interest": 0.02,
+                "unemployment": 0.01,
+                "action_mask": self.get_action_mask(agent),
+            }
+        return obs
+
+    @override(NewKeynesMarket)
     def generate_observations(self, actions: MultiAgentDict) -> MultiAgentDict:
         """Defines the logic of a step in the environment.
 
@@ -70,6 +97,7 @@ class SimpleNewKeynes(NewKeynesMarket):
 
         return obs
 
+    @override(NewKeynesMarket)
     def parse_actions(self, actions: MultiAgentDict) -> Tuple[MultiAgentDict, MultiAgentDict]:
         wages = {}
         consumptions = {}
@@ -86,7 +114,7 @@ class SimpleNewKeynes(NewKeynesMarket):
         w_index = action_idx - c_index * n_w_actions
 
         consumption = np.linspace(0.01, self.get_max_consumption(), n_c_actions)[c_index]
-        wage_increase = np.linspace(0.0, 1.0, n_w_actions)[w_index]
+        wage_increase = np.linspace(0.0, 0.1, n_w_actions)[w_index]
 
         return wage_increase, consumption
 
@@ -111,7 +139,7 @@ class SimpleNewKeynes(NewKeynesMarket):
         actions = np.zeros(50)
         max_c = agent.budget / self.firm.price
         n = self.scale(max_c)
-        actions[0 : int(n)] = 1  # noqa E203
+        actions[0 : int(n)] = 1.0  # noqa E203
         return actions
 
     def scale(self, old_value, n_c_actions=10, n_w_actions=5):
