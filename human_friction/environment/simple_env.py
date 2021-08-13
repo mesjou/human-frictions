@@ -40,15 +40,15 @@ class SimpleEnv(BaseEnv):
         # Final setup of the environment
         # ----------
         self.agents: Dict[str:SimpleAgent] = {}
-        self.action_space = spaces.Discrete(int(self.wage))
-
-        self.observation_space = spaces.Dict(
-            {
-                "next_period_wage": spaces.Box(0.0, np.inf, shape=(1,)),
-                "budget": spaces.Box(0.0, np.inf, shape=(1,)),
-                "interest": spaces.Box(0.0, np.inf, shape=(1,))
-            }
-        )
+        #self.action_space = spaces.Discrete(int(self.wage))
+        #
+        # self.observation_space = spaces.Dict(
+        #     {
+        #         "next_period_wage": spaces.Box(0.0, np.inf, shape=(1,)),
+        #         "budget": spaces.Box(0.0, np.inf, shape=(1,)),
+        #         "interest": spaces.Box(0.0, np.inf, shape=(1,))
+        #     }
+        # )
         self.INTEREST_SCHEME = [self.init_interest]* (config["episode_length"]+1)
         self.INTEREST_SCHEME[2] = 50*self.init_interest
 
@@ -77,6 +77,10 @@ class SimpleEnv(BaseEnv):
                 "interest": self.init_interest
             }
 
+        obs = {
+            "action_mask":np.ones(10),
+            "true_obs": obs,
+        }
         return obs
 
     def step(self, actions: MultiAgentDict) -> Tuple[MultiAgentDict, MultiAgentDict, MultiAgentDict, MultiAgentDict]:
@@ -108,6 +112,10 @@ class SimpleEnv(BaseEnv):
                 "budget": agent.budget,
                 "interest": self.interest
             }
+        obs = {
+            "action_mask":np.ones(10),
+            "true_obs": obs,
+        }
 
         return obs
 
