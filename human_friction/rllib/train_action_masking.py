@@ -10,7 +10,7 @@ from ray.rllib.models import ModelCatalog
 # seeds = list(range(1))
 env_config = {
     "episode_length": 800,
-    "n_agents": 2,
+    "n_agents": 10,
 }
 
 rllib_config = {
@@ -59,7 +59,7 @@ rllib_config = {
     "sgd_minibatch_size": 128,
     # Number of SGD iterations in each outer loop (i.e., number of epochs to
     # execute per train batch).
-    "num_sgd_iter": 30,
+    "num_sgd_iter": 10,
     # === PPO Specific ===
     # Should use a critic as a baseline (otherwise don't use value baseline;
     # required for using GAE).
@@ -165,7 +165,7 @@ rllib_config = {
 ModelCatalog.register_custom_model("my_model", FCNet)
 
 
-def run(debug=False, iteration=20000):
+def run(debug=False, iteration=1000):
     stop = {"training_iteration": 2 if debug else iteration}
     tune_analysis = tune.run(
         PPOTrainer,
@@ -176,10 +176,10 @@ def run(debug=False, iteration=20000):
         checkpoint_freq=0,
         checkpoint_at_end=True,
         name="PPO_New_Keynes",
-        local_dir=os.path.join(os.getcwd(), "human_friction/checkpoints"),
+        local_dir=os.path.join(os.getcwd(), "checkpoints"),
     )
 
-    with open("human_friction/results/last_checkpoint_path", "w") as f:
+    with open(os.path.join(os.getcwd(), "checkpoints/last_checkpoint_path"), "w") as f:
         f.write(tune_analysis.get_last_checkpoint())
 
     return tune_analysis

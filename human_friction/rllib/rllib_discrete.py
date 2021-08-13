@@ -6,14 +6,14 @@ from ray.rllib.utils.typing import MultiAgentDict
 
 OBS_SPACE_AGENT = spaces.Dict(
     {
-        "average_wage_increase": spaces.Box(0.0, 0.1, shape=(1,)),
-        "average_consumption": spaces.Box(0.0, np.inf, shape=(1,)),
-        "budget": spaces.Box(-np.inf, np.inf, shape=(1,)),
-        "inflation": spaces.Box(-np.inf, np.inf, shape=(1,)),
-        "employed_hours": spaces.Box(0.0, 1.0, shape=(1,)),
-        "interest": spaces.Box(0.0, np.inf, shape=(1,)),
-        "unemployment": spaces.Box(0.0, 1.0, shape=(1,)),
-        "action_mask": spaces.Box(0, 1, shape=(50,)),
+        "average_wage_increase": spaces.Box(0.0, 0.1, shape=(1,), dtype=np.float32),
+        "average_consumption": spaces.Box(0.0, np.inf, shape=(1,), dtype=np.float32),
+        "budget": spaces.Box(-np.inf, np.inf, shape=(1,), dtype=np.float32),
+        "inflation": spaces.Box(-np.inf, np.inf, shape=(1,), dtype=np.float32),
+        "employed_hours": spaces.Box(0.0, 1.0, shape=(1,), dtype=np.float32),
+        "interest": spaces.Box(0.0, np.inf, shape=(1,), dtype=np.float32),
+        "unemployment": spaces.Box(0.0, 1.0, shape=(1,), dtype=np.float32),
+        "action_mask": spaces.Box(0.0, 1.0, shape=(50,), dtype=np.float32),
     }
 )
 

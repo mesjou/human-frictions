@@ -228,9 +228,6 @@ class NewKeynesMarket(BaseEnv):
             rew[agent.agent_id] = rewards.utility(
                 labor=agent.labor, consumption=agent.consumption, labor_coefficient=self.labor_coefficient
             )
-
-            if agent.budget <= 0 and self.timestep == self._episode_length:
-                rew[agent.agent_id] = -60
         return rew
 
     def parse_actions(self, actions: MultiAgentDict) -> Tuple[MultiAgentDict, MultiAgentDict]:
