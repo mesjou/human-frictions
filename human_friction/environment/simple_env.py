@@ -70,17 +70,16 @@ class SimpleEnv(BaseEnv):
         self.agents = {}
         self.set_up_agents()
         obs = {}
+    
         for agent in self.agents.values():
             obs[agent.agent_id] = {
-                "next_period_wage": self.wage,
-                "budget": self.init_budget,
-                "interest": self.init_interest
+                "action_mask":np.ones(10),
+                "true_obs": {
+                        "next_period_wage": self.wage,
+                        "budget": self.init_budget,
+                        "interest": self.init_interest
+                }
             }
-
-        obs = {
-            "action_mask":np.ones(10),
-            "true_obs": obs,
-        }
         return obs
 
     def step(self, actions: MultiAgentDict) -> Tuple[MultiAgentDict, MultiAgentDict, MultiAgentDict, MultiAgentDict]:
@@ -106,16 +105,16 @@ class SimpleEnv(BaseEnv):
         self.update_budget()
 
         obs = {}
+
         for agent in self.agents.values():
             obs[agent.agent_id] = {
-                "next_period_wage": next_period_wage,
-                "budget": agent.budget,
-                "interest": self.interest
+                "action_mask":np.ones(10),
+                "true_obs": {
+                    "next_period_wage": next_period_wage,
+                    "budget": agent.budget,
+                    "interest": self.interest
+                }
             }
-        obs = {
-            "action_mask":np.ones(10),
-            "true_obs": obs,
-        }
 
         return obs
 

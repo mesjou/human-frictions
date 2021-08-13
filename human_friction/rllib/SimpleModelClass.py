@@ -8,13 +8,6 @@ from ray.rllib.utils.typing import TensorType, List
 import numpy as np
 
 
-@override(FullyConnectedNetwork)
-def forward(self, input_dict: Dict[str, TensorType],
-            state: List[TensorType],
-            seq_lens: TensorType) -> (TensorType, List[TensorType]):
-    model_out, self._value_out = self.base_model(input_dict["obs"]["true_obs"])
-
-    return model_out, state
 
 class SimpleModelMasked(TFModelV2):
     def __init__(self,
@@ -41,7 +34,7 @@ class SimpleModelMasked(TFModelV2):
 
         action_mask = input_dict["obs"]["action_mask"]
         action_embedding, _ = self.action_embed_model({
-            "obs": input_dict["obs"]["true_obs"]})
+           "obs": input_dict["obs"]["true_obs"]})
         intent_vector = tf.expand_dims(action_embedding, 1)
         action_logits = tf.reduce_sum(avail_actions * intent_vector,
             axis=1)
