@@ -98,6 +98,17 @@ class SimpleNewKeynes(NewKeynesMarket):
         return obs
 
     @override(NewKeynesMarket)
+    def generate_info(self):
+        info = {}
+        for agent in self.agents.values():
+            info[agent.agent_id] = {
+                "interets": self.interest,
+                "end_of_period_budget": agent.budget,
+                "actual_consumption": agent.consumption,
+            }
+        return info
+
+    @override(NewKeynesMarket)
     def parse_actions(self, actions: MultiAgentDict) -> Tuple[MultiAgentDict, MultiAgentDict]:
         wages = {}
         consumptions = {}
@@ -150,3 +161,26 @@ class SimpleNewKeynes(NewKeynesMarket):
             new_range = n_c_actions - 0.0
             new_value = ((old_value - 0.01) * new_range) / old_range + 0.0
         return max(1, math.floor(new_value)) * n_w_actions
+
+    def scenario_metrics(self):
+        """
+                Allows the scenario to generate metrics (collected along with component metrics
+                in the 'metrics' property).
+                To have the scenario add metrics, this function needs to return a dictionary of
+                {metric_key: value} where 'value' is a scalar (no nesting or lists!)
+                Here, summarize social metrics, endowments, utilities, and labor cost annealing.
+                """
+        metrics = dict()
+        example_agent = list(self.agents.values())[0]
+
+        quanities = [
+            a for a in dir(example_agent) if not a.startswith("__") and not callable(getattr(example_agent, a))
+        ]
+        quanities.remove("agent_id")
+        for quantity in quanities:
+            entries = list()
+            for agent in self.agents.values():
+                entries.append(getattr(agent, quantity))
+            metrics["agent_metrics/" + quantity] = np.mean(entries)
+
+        return metrics
