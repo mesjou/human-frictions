@@ -1,6 +1,7 @@
 import os
 
 import ray
+from human_friction.rllib.callbacks import MyCallbacks
 from human_friction.rllib.models import FCNet
 from human_friction.rllib.rllib_discrete import RllibDiscrete
 from ray import tune
@@ -9,7 +10,7 @@ from ray.rllib.models import ModelCatalog
 
 # seeds = list(range(1))
 env_config = {
-    "episode_length": 800,
+    "episode_length": 50,
     "n_agents": 10,
 }
 
@@ -159,6 +160,7 @@ rllib_config = {
     # "policy_mapping_fn": lambda x: 'learned',
     # },
     # "seed": tune.grid_search(seeds),
+    "callbacks": MyCallbacks,
 }
 
 
@@ -187,5 +189,5 @@ def run(debug=False, iteration=1000):
 
 if __name__ == "__main__":
     ray.init()
-    run(debug=False)
+    run(debug=True)
     ray.shutdown()

@@ -174,9 +174,12 @@ class NewKeynesMarket(BaseEnv):
         obs = self.generate_observations(actions)
         rew = self.compute_rewards()
         done = {"__all__": self.timestep >= self._episode_length}
-        info = {}
+        info = self.generate_info()
 
         return obs, rew, done, info
+
+    def generate_info(self):
+        return {}
 
     def generate_observations(self, actions: MultiAgentDict) -> MultiAgentDict:
         """Defines the logic of a step in the environment.
