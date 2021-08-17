@@ -11,13 +11,13 @@ from ray.rllib.evaluation import MultiAgentEpisode, RolloutWorker
 class MyCallbacks(DefaultCallbacks):
     def on_episode_start(self, worker: RolloutWorker, base_env: BaseEnv, episode: MultiAgentEpisode, **kwargs):
         envs: Sequence[RllibEnv] = base_env.get_unwrapped()
-        social_metrics = pd.DataFrame([e.env.scenario_metrics() for e in envs]).mean().to_dict()
+        social_metrics = pd.DataFrame([e.env.get_custom_metrics() for e in envs]).mean().to_dict()
         for k, _ in social_metrics.items():
             episode.user_data[k] = []
 
     def on_episode_step(self, worker: RolloutWorker, base_env: BaseEnv, episode: MultiAgentEpisode, **kwargs):
         envs: Sequence[RllibEnv] = base_env.get_unwrapped()
-        social_metrics = pd.DataFrame([e.env.scenario_metrics() for e in envs]).mean().to_dict()
+        social_metrics = pd.DataFrame([e.env.get_custom_metrics() for e in envs]).mean().to_dict()
         for k, v in social_metrics.items():
             episode.user_data[k].append(v)
 
