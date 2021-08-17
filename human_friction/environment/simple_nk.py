@@ -162,25 +162,28 @@ class SimpleNewKeynes(NewKeynesMarket):
             new_value = ((old_value - 0.01) * new_range) / old_range + 0.0
         return max(1, math.floor(new_value)) * n_w_actions
 
-    def scenario_metrics(self):
+    def get_custom_metrics(self):
         """
-                Allows the scenario to generate metrics (collected along with component metrics
-                in the 'metrics' property).
-                To have the scenario add metrics, this function needs to return a dictionary of
-                {metric_key: value} where 'value' is a scalar (no nesting or lists!)
-                Here, summarize social metrics, endowments, utilities, and labor cost annealing.
-                """
+        Generate metrics for each step of the environment. This could be agent budget, wages consumption etc.
+        Returns (dict): return a dictionary of {metric_key: value} where 'value' is a scalar.
+
+        """
         metrics = dict()
         example_agent = list(self.agents.values())[0]
 
-        quanities = [
+        agent_quanities = [
             a for a in dir(example_agent) if not a.startswith("__") and not callable(getattr(example_agent, a))
         ]
-        quanities.remove("agent_id")
-        for quantity in quanities:
+        agent_quanities.remove("agent_id")
+
+        for quantity in agent_quanities:
             entries = list()
             for agent in self.agents.values():
                 entries.append(getattr(agent, quantity))
             metrics["agent_metrics/" + quantity] = np.mean(entries)
+
+        env_quanities = ["inflation", "interest", "unemployment"]
+        for quantity in env_quanities:
+            metrics["env_metrics/" + quantity] = getattr(self, quantity)
 
         return metrics
