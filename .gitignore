@@ -131,3 +131,6 @@ dmypy.json
 # pycharm
 .DS_Store
 .idea/
+
+# rllib
+checkpoints/
