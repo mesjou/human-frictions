@@ -1,5 +1,7 @@
 from typing import Dict
 
+from numpy.testing import assert_almost_equal
+
 
 class SimpleFirm(object):
     def __init__(
@@ -23,9 +25,16 @@ class SimpleFirm(object):
         assert production >= 0.0
         self.production = production
 
-    def get_labor_demand(self):
+    def get_labor_demand(self, n_agents):
         labor_demand = (self.production / self.technology) ** (1 / (1 - self.alpha))
+
         assert labor_demand >= 0.0
+        if labor_demand > n_agents:
+            assert_almost_equal(
+                labor_demand, n_agents, decimal=7, err_msg="Labor demand cannot be satisfied from agents"
+            )
+            labor_demand = n_agents
+
         self.labor_demand = labor_demand
 
     def hire_worker(self, wages: Dict) -> Dict:
@@ -67,7 +76,7 @@ class SimpleFirm(object):
             new_price = 0.0
 
         inflation = (new_price - self.price) / self.price
-        assert new_price >= 0.0, "Firms do not set price below zero"
+        assert new_price >= 0.0, "Firms are not allowed to set price below zero"
         self.price = new_price
 
         return inflation
