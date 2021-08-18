@@ -94,8 +94,6 @@ class SimpleNewKeynes(NewKeynesMarket):
                 "action_mask": self.get_action_mask(agent),
             }
 
-        assert self.firm.labor_demand <= self.n_agents, "Labor demand cannot be satisfied from agents"
-
         return obs
 
     @override(NewKeynesMarket)
@@ -138,7 +136,7 @@ class SimpleNewKeynes(NewKeynesMarket):
             wages: (MultiAgentDict) defines how much each agent wants to earn in nominal values
         """
         self.firm.produce(demand)
-        self.firm.get_labor_demand()
+        self.firm.get_labor_demand(self.n_agents)
         occupation = self.firm.hire_worker(wages)
         self.inflation = self.firm.set_price(occupation, wages)
         self.unemployment = self.get_unemployment()

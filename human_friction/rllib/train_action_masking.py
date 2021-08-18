@@ -10,7 +10,7 @@ from ray.rllib.models import ModelCatalog
 
 # seeds = list(range(1))
 env_config = {
-    "episode_length": 800,
+    "episode_length": 200,
     "n_agents": 10,
     "init_budget": 20.0,
     "init_wage": 1.0,
@@ -27,7 +27,7 @@ rllib_config = {
     # Number of environments to evaluate vector-wise per worker. This enables
     # model inference batching, which can improve performance for inference
     # bottlenecked workloads.
-    "num_envs_per_worker": 6,
+    "num_envs_per_worker": 8,
     # Divide episodes into fragments of this many steps each during rollouts.
     # Sample batches of this size are collected from rollout workers and
     # combined into a larger batch of `train_batch_size` for learning.
@@ -57,7 +57,7 @@ rllib_config = {
     # should be <= rollout_fragment_length * worker * envs/worker
     # Samples batches will be concatenated together to a batch of this size,
     # which is then passed to SGD.
-    "train_batch_size": 4000,
+    "train_batch_size": 3200,
     # Total SGD batch size across all devices for SGD. This defines the
     # minibatch size within each epoch.
     "sgd_minibatch_size": 512,
@@ -94,7 +94,7 @@ rllib_config = {
     # Target value for KL divergence.
     "kl_target": 0.01,
     # Whether to rollout "complete_episodes" or "truncate_episodes".
-    "batch_mode": "truncate_episodes",
+    "batch_mode": "complete_episodes",
     # Which observation filter to apply to the observation.
     "observation_filter": "NoFilter",
     # === Deep Learning Framework Settings ===
@@ -183,9 +183,9 @@ def run(debug=False, iteration=2500):
         PPOTrainer,
         config=rllib_config,
         stop=stop,
-        max_failures=3,
+        max_failures=5,
         resume=False,
-        checkpoint_freq=0,
+        checkpoint_freq=100,
         checkpoint_at_end=True,
         name="PPO_New_Keynes",
         local_dir=os.path.join(os.getcwd(), "checkpoints"),
