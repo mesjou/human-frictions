@@ -3,15 +3,17 @@ import os
 import ray
 from human_friction.rllib.callbacks import MyCallbacks
 from human_friction.rllib.models import FCNet
-from human_friction.rllib.rllib_discrete import RllibDiscrete
+from human_friction.rllib.rllib_discrete import ACT_SPACE_AGENT, OBS_SPACE_AGENT, RllibDiscrete
 from ray import tune
 from ray.rllib.agents.ppo import PPOTrainer
 from ray.rllib.models import ModelCatalog
 
 # seeds = list(range(1))
 env_config = {
-    "episode_length": 50,
+    "episode_length": 800,
     "n_agents": 10,
+    "init_budget": 20.0,
+    "init_wage": 1.0,
 }
 
 rllib_config = {
@@ -25,7 +27,7 @@ rllib_config = {
     # Number of environments to evaluate vector-wise per worker. This enables
     # model inference batching, which can improve performance for inference
     # bottlenecked workloads.
-    "num_envs_per_worker": 8,
+    "num_envs_per_worker": 6,
     # Divide episodes into fragments of this many steps each during rollouts.
     # Sample batches of this size are collected from rollout workers and
     # combined into a larger batch of `train_batch_size` for learning.
@@ -43,6 +45,7 @@ rllib_config = {
     # divides the train batch into minibatches for multi-epoch SGD.
     "rollout_fragment_length": 200,
     "num_gpus": int(os.environ.get("RLLIB_NUM_GPUS", "0")),
+    "num_gpus_per_worker": 0 / 10,
     # === Settings for the Trainer process ===
     # Discount factor of the MDP.
     "gamma": 0.99,
@@ -57,7 +60,7 @@ rllib_config = {
     "train_batch_size": 4000,
     # Total SGD batch size across all devices for SGD. This defines the
     # minibatch size within each epoch.
-    "sgd_minibatch_size": 128,
+    "sgd_minibatch_size": 512,
     # Number of SGD iterations in each outer loop (i.e., number of epochs to
     # execute per train batch).
     "num_sgd_iter": 10,
@@ -77,39 +80,12 @@ rllib_config = {
     # Coefficient of the value function loss. IMPORTANT: you must tune this if
     # you set vf_share_layers=True inside your model's config.
     "vf_loss_coeff": 0.05,
-    "model": {
-        # Share layers for value function. If you set this to True, it's
-        # important to tune vf_loss_coeff.
-        "vf_share_layers": True,
-        # === Built-in options ===
-        # FullyConnectedNetwork (tf and torch): rllib.models.tf|torch.fcnet.py
-        # These are used if no custom model is specified and the input space is 1D.
-        # Number of hidden layers to be used.
-        "fcnet_hiddens": [256, 256],
-        # Activation function descriptor.
-        # Supported values are: "tanh", "relu", "swish" (or "silu"),
-        # "linear" (or None).
-        "fcnet_activation": "tanh",
-        # === Options for custom models ===
-        # Name of a custom model to use
-        "custom_model": "my_model",
-        # Extra options to pass to the custom classes. These will be available to
-        # the Model's constructor in the model_config field. Also, they will be
-        # attempted to be passed as **kwargs to ModelV2 models. For an example,
-        # see rllib/models/[tf|torch]/attention_net.py.
-        "custom_model_config": {},
-        # Name of a custom action distribution to use.
-        "custom_action_dist": None,
-        # Custom preprocessors are deprecated. Please use a wrapper class around
-        # your environment instead to preprocess observations.
-        "custom_preprocessor": None,
-    },
     # Coefficient of the entropy regularizer.
-    "entropy_coeff": 0.0,
+    "entropy_coeff": 1e-4,
     # Decay schedule for the entropy regularizer.
     "entropy_coeff_schedule": None,
     # PPO clip parameter.
-    "clip_param": 0.3,
+    "clip_param": 0.25,
     # Clip param for the value function. Note that this is sensitive to the
     # scale of the rewards. If your expected V is large, increase this.
     "vf_clip_param": 10.0,
@@ -126,11 +102,11 @@ rllib_config = {
     # tf2: TensorFlow 2.x (eager)
     # tfe: TensorFlow eager
     # torch: PyTorch
-    "framework": "tf",
+    "framework": "tfe",
     # Enable tracing in eager mode. This greatly improves performance, but
     # makes it slightly harder to debug since Python code won't be evaluated
     # after the initial eager pass. Only possible if framework=tfe.
-    "eager_tracing": False,
+    "eager_tracing": True,
     # optimizer seems to be Adam by default at the moment
     # "optimizer": {},
     # === Exploration Settings ===
@@ -149,16 +125,50 @@ rllib_config = {
         # Add constructor kwargs here (if any).
     },
     # === Settings for Multi-Agent Environments ===
-    # "multiagent": {
-    # Map of type MultiAgentPolicyConfigDict from policy ids to tuples
-    # of (policy_cls, obs_space, act_space, config). This defines the
-    # observation and action spaces of the policies and any extra config.
-    # "policies": {
-    # "learned": (None, OBS_SPACE_AGENT, ACT_SPACE_AGENT, {"fcnet_hiddens": [256, 256]}),
-    # },
-    # Function mapping agent ids to policy ids.
-    # "policy_mapping_fn": lambda x: 'learned',
-    # },
+    "multiagent": {
+        # Map of type MultiAgentPolicyConfigDict from policy ids to tuples
+        # of (policy_cls, obs_space, act_space, config). This defines the
+        # observation and action spaces of the policies and any extra config.
+        "policies": {
+            "learned": (
+                None,
+                OBS_SPACE_AGENT,
+                ACT_SPACE_AGENT,
+                {
+                    "model": {
+                        # Share layers for value function. If you set this to True, it's
+                        # important to tune vf_loss_coeff.
+                        "vf_share_layers": True,
+                        # === Built-in options ===
+                        # FullyConnectedNetwork (tf and torch): rllib.models.tf|torch.fcnet.py
+                        # These are used if no custom model is specified and the input space is 1D.
+                        # Number of hidden layers to be used.
+                        "fcnet_hiddens": [256, 256],
+                        # Activation function descriptor.
+                        # Supported values are: "tanh", "relu", "swish" (or "silu"),
+                        # "linear" (or None).
+                        "fcnet_activation": "tanh",
+                        # === Options for custom models ===
+                        # Name of a custom model to use
+                        "custom_model": "my_model",
+                        # Extra options to pass to the custom classes. These will be available to
+                        # the Model's constructor in the model_config field. Also, they will be
+                        # attempted to be passed as **kwargs to ModelV2 models. For an example,
+                        # see rllib/models/[tf|torch]/attention_net.py.
+                        "custom_model_config": {},
+                        # Name of a custom action distribution to use.
+                        "custom_action_dist": None,
+                        # Custom preprocessors are deprecated. Please use a wrapper class around
+                        # your environment instead to preprocess observations.
+                        "custom_preprocessor": None,
+                    },
+                },
+            ),
+        },
+        # Function mapping agent ids to policy ids.
+        "policy_mapping_fn": lambda x: "learned",
+    },
+    "no_done_at_end": False,
     # "seed": tune.grid_search(seeds),
     "callbacks": MyCallbacks,
 }
@@ -167,7 +177,7 @@ rllib_config = {
 ModelCatalog.register_custom_model("my_model", FCNet)
 
 
-def run(debug=False, iteration=1000):
+def run(debug=False, iteration=2500):
     stop = {"training_iteration": 2 if debug else iteration}
     tune_analysis = tune.run(
         PPOTrainer,
@@ -189,5 +199,5 @@ def run(debug=False, iteration=1000):
 
 if __name__ == "__main__":
     ray.init()
-    run(debug=True)
+    run(debug=False)
     ray.shutdown()

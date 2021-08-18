@@ -59,7 +59,7 @@ class NewKeynesMarket(BaseEnv):
         assert isinstance(init_budget, float)
         self.init_budget = init_budget
 
-        init_wage = config.get("init_wage", 0.5)
+        init_wage = config.get("init_wage", 1.0)
         assert isinstance(init_wage, float)
         assert init_wage > 0.0
         self.init_wage = init_wage
