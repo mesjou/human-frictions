@@ -41,12 +41,13 @@ class SimpleNewKeynes(NewKeynesMarket):
         for agent in self.agents.values():
             obs[agent.agent_id] = {
                 "average_wage_increase": 0.02,
-                "average_consumption": 0.05,
+                "average_consumption": self.get_max_consumption(),
                 "budget": self.init_budget,
-                "inflation": 0.01,
-                "employed_hours": 0.9,
-                "interest": 0.02,
-                "unemployment": 0.01,
+                "inflation": 0.02,
+                "employed_hours": 1.0,
+                # todo does it make sense to lower interest below 0?
+                "interest": 1.0,
+                "unemployment": 0.0,
                 "action_mask": self.get_action_mask(agent),
             }
         return obs
@@ -85,7 +86,7 @@ class SimpleNewKeynes(NewKeynesMarket):
             obs[agent.agent_id] = {
                 "average_wage_increase": np.mean([wage_increases[agent.agent_id] for agent in self.agents.values()]),
                 "average_consumption": np.mean([demand[agent.agent_id] for agent in self.agents.values()]),
-                "budget": agent.budget,
+                "budget": agent.budget / self.firm.price,
                 "inflation": self.inflation,
                 "employed_hours": agent.labor,
                 "interest": self.interest,
