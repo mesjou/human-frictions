@@ -23,7 +23,7 @@ rllib_config = {
     # === Settings for Rollout Worker processes ===
     # Number of rollout worker actors to create for parallel sampling. Setting
     # this to 0 will force rollouts to be done in the trainer actor.
-    "num_workers": 2,
+    "num_workers": 0,
     # Number of environments to evaluate vector-wise per worker. This enables
     # model inference batching, which can improve performance for inference
     # bottlenecked workloads.
@@ -155,7 +155,7 @@ rllib_config = {
                         # the Model's constructor in the model_config field. Also, they will be
                         # attempted to be passed as **kwargs to ModelV2 models. For an example,
                         # see rllib/models/[tf|torch]/attention_net.py.
-                        "custom_model_config": {},
+                        "custom_model_config": {"obs_shape": 8},
                         # Name of a custom action distribution to use.
                         "custom_action_dist": None,
                         # Custom preprocessors are deprecated. Please use a wrapper class around
@@ -199,5 +199,5 @@ def run(debug=False, iteration=2500):
 
 if __name__ == "__main__":
     ray.init()
-    run(debug=False)
+    run(debug=True)
     ray.shutdown()

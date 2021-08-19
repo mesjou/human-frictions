@@ -28,7 +28,9 @@ class FCNet(TFModelV2):
         activation = get_activation_fn(activation)
 
         # We are using obs_flat, so take the flattened shape as input.
-        inputs = tf.keras.layers.Input(shape=(int(np.product(obs_space.shape)),), name="observations")
+        inputs = tf.keras.layers.Input(
+            shape=(int(np.product(model_config["custom_model_config"]["obs_shape"])),), name="observations"
+        )
 
         # Create layers 0 to second-last.
         # TODO akirosa added layer normalization as essential
@@ -56,7 +58,7 @@ class FCNet(TFModelV2):
     def forward(
         self, input_dict: Dict[str, TensorType], state: List[TensorType], seq_lens: TensorType,
     ) -> (TensorType, List[TensorType]):
-        output, self._value_out = self.base_model([input_dict["obs_flat"]])
+        output, self._value_out = self.base_model([input_dict["obs"]["state"]])
 
         action_mask = input_dict["obs"]["action_mask"]
         inf_mask = tf.maximum(tf.math.log(action_mask), tf.float32.min)
