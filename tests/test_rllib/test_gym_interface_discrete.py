@@ -1,5 +1,7 @@
+import pytest
+
 import numpy as np
-from human_friction.environment.new_keynes import NewKeynesMarket
+from human_friction.environment.simple_nk import SimpleNewKeynes
 from human_friction.rllib.rllib_discrete import RllibDiscrete
 
 
@@ -27,18 +29,25 @@ def test_env():
 def test_step():
     config = {"episode_length": 20, "n_agents": 2, "seed": 1}
     rllib_env = RllibDiscrete(config)
-    nk_env = NewKeynesMarket(config)
+    nk_env = SimpleNewKeynes(config)
 
     ob_rllib = rllib_env.reset()
     ob_nk = nk_env.reset()
-    assert ob_rllib == ob_nk
+    for agent_id in ob_rllib.keys():
+        assert (ob_nk[agent_id]["action_mask"] == ob_rllib[agent_id]["action_mask"]).all()
+        del ob_nk[agent_id]["action_mask"]
+        assert pytest.approx(sum(ob_nk[agent_id].values())) == ob_rllib[agent_id]["state"].sum()
 
     for step in range(20):
         action = act(rllib_env)
         ob_next_rllib, r_rllib, done_rllib, _ = rllib_env.step(action)
         ob_next_nk, r_nk, done_nk, _ = nk_env.step(action)
 
-        assert ob_next_rllib == ob_next_nk
+        for agent_id in ob_rllib.keys():
+            assert (ob_next_nk[agent_id]["action_mask"] == ob_next_rllib[agent_id]["action_mask"]).all()
+            del ob_next_nk[agent_id]["action_mask"]
+            assert pytest.approx(sum(ob_next_nk[agent_id].values())) == ob_next_rllib[agent_id]["state"].sum()
+
         assert r_rllib == r_nk
         assert done_rllib == done_nk
 
