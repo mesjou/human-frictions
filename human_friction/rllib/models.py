@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Tuple
 
 import numpy as np
 from gym import spaces
@@ -20,6 +20,8 @@ class FCNet(TFModelV2):
         num_outputs: int,
         model_config: ModelConfigDict,
         name: str,
+        true_obs_shape: Tuple,
+        **kwargs,
     ):
         super(FCNet, self).__init__(obs_space, action_space, num_outputs, model_config, name)
 
@@ -28,9 +30,7 @@ class FCNet(TFModelV2):
         activation = get_activation_fn(activation)
 
         # We are using obs_flat, so take the flattened shape as input.
-        inputs = tf.keras.layers.Input(
-            shape=(int(np.product(model_config["custom_model_config"]["obs_shape"])),), name="observations"
-        )
+        inputs = tf.keras.layers.Input(shape=(int(np.product(true_obs_shape)),), name="observations")
 
         # Create layers 0 to second-last.
         # TODO akirosa added layer normalization as essential

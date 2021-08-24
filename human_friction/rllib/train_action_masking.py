@@ -155,7 +155,7 @@ rllib_config = {
                         # the Model's constructor in the model_config field. Also, they will be
                         # attempted to be passed as **kwargs to ModelV2 models. For an example,
                         # see rllib/models/[tf|torch]/attention_net.py.
-                        "custom_model_config": {"obs_shape": 7},
+                        "custom_model_config": {"true_obs_shape": 7},
                         # Name of a custom action distribution to use.
                         "custom_action_dist": None,
                         # Custom preprocessors are deprecated. Please use a wrapper class around
