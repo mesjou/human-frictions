@@ -23,7 +23,7 @@ rllib_config = {
     # === Settings for Rollout Worker processes ===
     # Number of rollout worker actors to create for parallel sampling. Setting
     # this to 0 will force rollouts to be done in the trainer actor.
-    "num_workers": 0,
+    "num_workers": 2,
     # Number of environments to evaluate vector-wise per worker. This enables
     # model inference batching, which can improve performance for inference
     # bottlenecked workloads.
@@ -177,7 +177,7 @@ rllib_config = {
 ModelCatalog.register_custom_model("my_model", FCNet)
 
 
-def run(debug=False, iteration=2500):
+def run(debug=False, iteration=2000):
     stop = {"training_iteration": 2 if debug else iteration}
     tune_analysis = tune.run(
         PPOTrainer,
@@ -199,5 +199,5 @@ def run(debug=False, iteration=2500):
 
 if __name__ == "__main__":
     ray.init()
-    run(debug=True)
+    run(debug=False)
     ray.shutdown()
