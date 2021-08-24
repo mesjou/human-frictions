@@ -155,7 +155,7 @@ rllib_config = {
                         # the Model's constructor in the model_config field. Also, they will be
                         # attempted to be passed as **kwargs to ModelV2 models. For an example,
                         # see rllib/models/[tf|torch]/attention_net.py.
-                        "custom_model_config": {},
+                        "custom_model_config": {"true_obs_shape": 7},
                         # Name of a custom action distribution to use.
                         "custom_action_dist": None,
                         # Custom preprocessors are deprecated. Please use a wrapper class around
@@ -177,7 +177,7 @@ rllib_config = {
 ModelCatalog.register_custom_model("my_model", FCNet)
 
 
-def run(debug=False, iteration=2500):
+def run(debug=False, iteration=2000):
     stop = {"training_iteration": 2 if debug else iteration}
     tune_analysis = tune.run(
         PPOTrainer,
