@@ -7,7 +7,7 @@ from ray.rllib.utils.typing import MultiAgentDict
 OBS_SPACE_AGENT = spaces.Dict(
     {
         "action_mask": spaces.Box(0.0, 1.0, shape=(50,)),
-        "state": spaces.Box(-np.inf, np.inf, shape=(8,), dtype=np.float32),
+        "state": spaces.Box(-np.inf, np.inf, shape=(7,), dtype=np.float32),
     }
 )
 ACT_SPACE_AGENT = spaces.Discrete(50)
