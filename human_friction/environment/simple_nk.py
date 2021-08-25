@@ -2,6 +2,7 @@ import math
 from typing import Tuple
 
 import numpy as np
+from human_friction.agents.household import HouseholdAgent
 from human_friction.agents.nonprofitfirm import SimpleFirm
 from human_friction.environment.new_keynes import NewKeynesMarket
 from human_friction.utils.annotations import override
@@ -145,7 +146,7 @@ class SimpleNewKeynes(NewKeynesMarket):
             agent.earn(occupation[agent.agent_id], wages[agent.agent_id])
             agent.consume(demand[agent.agent_id], self.firm.price)
 
-    def get_action_mask(self, agent):
+    def get_action_mask(self, agent: HouseholdAgent) -> np.array:
         actions = np.zeros(50)
         max_c = agent.budget / self.firm.price
         n = self.scale(max_c)
@@ -181,8 +182,15 @@ class SimpleNewKeynes(NewKeynesMarket):
                 entries.append(getattr(agent, quantity))
             metrics["agent_metrics/" + quantity] = np.mean(entries)
 
+        action_mask = list()
+        for agent in self.agents.values():
+            action_mask.append(self.get_action_mask(agent).mean())
+        metrics["agent_metrics/" + "action_mask"] = np.mean(action_mask)
+
         env_quanities = ["inflation", "interest", "unemployment"]
         for quantity in env_quanities:
             metrics["env_metrics/" + quantity] = getattr(self, quantity)
+
+        metrics["env_metrics/" + "price"] = self.firm.price
 
         return metrics

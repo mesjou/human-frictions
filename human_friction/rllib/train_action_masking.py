@@ -79,7 +79,8 @@ rllib_config = {
     "shuffle_sequences": True,
     # Coefficient of the value function loss. IMPORTANT: you must tune this if
     # you set vf_share_layers=True inside your model's config.
-    "vf_loss_coeff": 0.05,
+    # should lay between 0.5 and 1.0
+    "vf_loss_coeff": 0.9,
     # Coefficient of the entropy regularizer.
     "entropy_coeff": 1e-4,
     # Decay schedule for the entropy regularizer.
