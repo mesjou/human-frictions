@@ -1,23 +1,28 @@
 import argparse
-import os
 
 import matplotlib.pyplot as plt
 import numpy as np
 import ray
 import yaml
-from human_friction.rllib.rllib_env import RllibEnv
+from human_friction.rllib.models import FCNet
+from human_friction.run_configurations.rllib_config import rllib_config
 from matplotlib.ticker import MaxNLocator
 from ray.rllib.agents.ppo import PPOTrainer
+from ray.rllib.models import ModelCatalog
 from scipy.interpolate import make_interp_spline
 
+ModelCatalog.register_custom_model("my_model", FCNet)
+
+
 parser = argparse.ArgumentParser()
-parser.add_argument("--checkpoint_path_stored", default="human_friction/last_checkpoint_path")
+parser.add_argument(
+    "--checkpoint_path_stored", default="human_friction/run_configurations/checkpoints/last_checkpoint_path"
+)
 parser.add_argument("--var_names", default=None)
 parser.add_argument("--config_file", default=None)
-parser.add_argument("--env_config_file", default=None)
 
 
-def main(checkpoint_path_stored, var_names=None, config_file=None, env_config_file=None):
+def main(checkpoint_path_stored, var_names=None, config_file=None):
     """ Computes and plots actions from the trained model
 
         Parameters
@@ -43,35 +48,17 @@ def main(checkpoint_path_stored, var_names=None, config_file=None, env_config_fi
     with open(checkpoint_path_stored, "r") as f:
         checkpoint = f.read()
 
-    if env_config_file:
-        env_config = read_config(env_config_file)
-    else:
-        env_config = {
-            "episode_length": 20,
-            "n_agents": 2,
-        }
-
     if config_file:
-        rllib_config = read_config(config_file)
+        config = read_config(config_file)
     else:
-        rllib_config = {
-            "env": RllibEnv,
-            "env_config": env_config,
-            "rollout_fragment_length": 128,
-            "train_batch_size": 256,
-            "model": {"fcnet_hiddens": [50, 50]},
-            "lr": 5e-3,
-            # "seed": tune.grid_search(seeds),
-            "num_gpus": int(os.environ.get("RLLIB_NUM_GPUS", "0")),
-            "framework": "tf",
-        }
+        config = rllib_config
 
     ray.init()
-    env = rllib_config["env"]
-    agent = PPOTrainer(config=rllib_config, env=env)
+    env = config["env"]
+    agent = PPOTrainer(config=config, env=env)
     agent.restore(checkpoint)
-    actions, rewards = compute_actions(agent, env(env_config))
-    plot_results(actions, rewards, var_names, env_config)
+    actions, rewards = compute_actions(agent, env(config["env_config"]))
+    plot_results(actions, rewards, var_names, config)
     ray.shutdown()
 
     return actions, rewards
@@ -147,4 +134,4 @@ def smoothed(x, y):
 if __name__ == "__main__":
     args = parser.parse_args()
     debug_mode = False
-    main(debug_mode, args.checkpoint_path_stored, args.var_names, args.config_file, args.env_config_file)
+    main(args.checkpoint_path_stored, args.var_names, args.config_file)
