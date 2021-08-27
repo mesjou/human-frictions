@@ -25,7 +25,8 @@ class SimpleNewKeynes(NewKeynesMarket):
         )
 
     def get_max_consumption(self):
-        return self.firm.technology * self.n_agents ** (-self.firm.alpha)
+        total_production = self.firm.production_function(float(self.n_agents))
+        return total_production / self.n_agents
 
     def reset(self):
         # todo make this better!
@@ -38,16 +39,17 @@ class SimpleNewKeynes(NewKeynesMarket):
         self.timestep = 0
         self.agents = {}
         self.set_up_agents()
+        self.firm.price = 1.0
         obs = {}
         for agent in self.agents.values():
             obs[agent.agent_id] = {
                 "average_wage_increase": 0.02,
                 "average_consumption": self.get_max_consumption(),
-                "budget": self.init_budget,
+                "budget": self.init_budget / self.firm.price,
                 "inflation": 0.02,
                 "employed_hours": 1.0,
                 # todo does it make sense to lower interest below 0?
-                "interest": 1.0,
+                "interest": 1.02,
                 "unemployment": 0.0,
                 "action_mask": self.get_action_mask(agent),
             }

@@ -249,3 +249,12 @@ def test_get_action_mask():
     env = SimpleNewKeynes(config)
     env.reset()
     assert sum(env.get_action_mask(env.agents["agent-0"])) == 10
+
+
+def test_step_actions():
+    """Test if each step action masking is correctly specified and all this stuff
+
+    Returns:
+
+    """
+    pass

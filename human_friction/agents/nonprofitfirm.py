@@ -80,3 +80,6 @@ class SimpleFirm(object):
         self.price = new_price
 
         return inflation
+
+    def production_function(self, labor: float) -> float:
+        return self.technology * labor ** (1 - self.alpha)
