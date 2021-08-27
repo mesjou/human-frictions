@@ -160,7 +160,7 @@ class SimpleNewKeynes(NewKeynesMarket):
             old_range = self.get_max_consumption() - 0.01
             new_range = n_c_actions - 0.0
             new_value = ((old_value - 0.01) * new_range) / old_range + 0.0
-        return max(1, math.floor(new_value)) * n_w_actions
+        return max(1, math.ceil(new_value)) * n_w_actions
 
     def get_custom_metrics(self):
         """

@@ -37,13 +37,13 @@ class MetricGenerator(ABC):
 
     def plot(self):
         df = pd.DataFrame.from_dict(self.env_data, orient="index").transpose()
-        df = df.rolling(5).sum()
+        df = df.rolling(5, axis=0).mean()
         df.plot()
         plt.show()
 
         for metric, data in self.agent_data.items():
             df = pd.DataFrame.from_dict(data, orient="index").transpose()
-            df = df.rolling(5).sum()
+            df = df.rolling(5, axis=0).mean()
             df.plot()
             plt.title(metric)
             plt.show()

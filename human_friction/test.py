@@ -47,7 +47,7 @@ if __name__ == "__main__":
     ray.init()
     ppo_agent = load(
         "run_configurations/checkpoints/PPO_New_Keynes/"
-        + "PPO_RllibDiscrete_2ed37_00000_0_2021-08-24_15-07-06/checkpoint_002000/checkpoint-2000",  # noqa W503
+        + "PPO_RllibDiscrete_fbf4a_00000_0_2021-08-24_12-06-44/checkpoint_000500/checkpoint-500",  # noqa W503
         rllib_config,
     )
     test(ppo_agent, rllib_config)

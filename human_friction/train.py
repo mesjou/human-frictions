@@ -32,5 +32,5 @@ def run(debug=False, iteration=2000):
 
 if __name__ == "__main__":
     ray.init()
-    run(debug=True)
+    run(debug=False)
     ray.shutdown()

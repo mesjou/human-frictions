@@ -26,5 +26,5 @@ def curriculum_fn(train_results: dict, task_settable_env: TaskSettableEnv, env_c
         new_task = 10.0
     else:
         new_task = 20.0
-
+    # Todo avoid fallback to previous task -> wrap in a class object?
     return new_task
