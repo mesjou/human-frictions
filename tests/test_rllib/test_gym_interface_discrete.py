@@ -46,7 +46,7 @@ def test_step():
         for agent_id in ob_rllib.keys():
             assert (ob_next_nk[agent_id]["action_mask"] == ob_next_rllib[agent_id]["action_mask"]).all()
             del ob_next_nk[agent_id]["action_mask"]
-            assert pytest.approx(sum(ob_next_nk[agent_id].values()), 3.8e-6) == ob_next_rllib[agent_id]["state"].sum()
+            assert pytest.approx(sum(ob_next_nk[agent_id].values()), 3.8e-4) == ob_next_rllib[agent_id]["state"].sum()
 
         assert r_rllib == r_nk
         assert done_rllib == done_nk

@@ -236,7 +236,7 @@ def test_get_action_mask():
     }
     env = SimpleNewKeynes(config)
     env.reset()
-    assert sum(env.get_action_mask(env.agents["agent-0"])) == 20
+    assert sum(env.get_action_mask(env.agents["agent-0"])) == 25
 
     config = {
         "episode_length": 20,
@@ -248,4 +248,41 @@ def test_get_action_mask():
     }
     env = SimpleNewKeynes(config)
     env.reset()
-    assert sum(env.get_action_mask(env.agents["agent-0"])) == 10
+    assert sum(env.get_action_mask(env.agents["agent-0"])) == 15
+
+
+def debug_step_actions():
+    """Not in test scope, for debugging only!"""
+
+    episode_length = 200
+    config = {
+        "episode_length": episode_length,
+        "n_agents": 2,
+        "init_budget": 1.0,
+    }
+
+    env = SimpleNewKeynes(config)
+    obs = env.reset()
+    for i in range(episode_length):
+        actions = {}
+        print("price", env.firm.price)
+        for agent_id, agent_obs in obs.items():
+            print("[][][][][] Agent ", agent_id)
+            print("consumption_euro", env.agents[agent_id].consumption * env.firm.price)
+            print("budget", env.agents[agent_id].budget)
+            print("wage", env.agents[agent_id].wage)
+            print("labor", env.agents[agent_id].labor)
+            print("consumption_real", env.agents[agent_id].consumption)
+
+            action_mask = obs[agent_id]["action_mask"]
+            itemindex = np.where(action_mask == 0)
+            if len(itemindex[0]) == 0:
+                a = 45
+            else:
+                a = np.amin(itemindex)
+            actions[agent_id] = a
+        obs, rewards, done, info = env.step(actions)
+
+        print("############# new period ###########")
+
+        print("rewards", rewards)

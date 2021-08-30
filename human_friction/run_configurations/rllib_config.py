@@ -1,25 +1,16 @@
 import os
 
-import ray
 from human_friction.rllib.callbacks import MyCallbacks
-from human_friction.rllib.models import FCNet
+from human_friction.rllib.curriculum import curriculum_fn
 from human_friction.rllib.rllib_discrete import ACT_SPACE_AGENT, OBS_SPACE_AGENT, RllibDiscrete
-from ray import tune
-from ray.rllib.agents.ppo import PPOTrainer
-from ray.rllib.models import ModelCatalog
-
-# seeds = list(range(1))
-env_config = {
-    "episode_length": 200,
-    "n_agents": 10,
-    "init_budget": 20.0,
-    "init_wage": 1.0,
-}
+from human_friction.run_configurations.environment_config import env_config
 
 rllib_config = {
     # === Settings for Environment ===
     "env": RllibDiscrete,
     "env_config": env_config,
+    # adjust environment task diffiulty
+    "env_task_fn": curriculum_fn,
     # === Settings for Rollout Worker processes ===
     # Number of rollout worker actors to create for parallel sampling. Setting
     # this to 0 will force rollouts to be done in the trainer actor.
@@ -79,7 +70,8 @@ rllib_config = {
     "shuffle_sequences": True,
     # Coefficient of the value function loss. IMPORTANT: you must tune this if
     # you set vf_share_layers=True inside your model's config.
-    "vf_loss_coeff": 0.05,
+    # should lay between 0.5 and 1.0
+    "vf_loss_coeff": 0.9,
     # Coefficient of the entropy regularizer.
     "entropy_coeff": 1e-4,
     # Decay schedule for the entropy regularizer.
@@ -172,32 +164,3 @@ rllib_config = {
     # "seed": tune.grid_search(seeds),
     "callbacks": MyCallbacks,
 }
-
-
-ModelCatalog.register_custom_model("my_model", FCNet)
-
-
-def run(debug=False, iteration=2000):
-    stop = {"training_iteration": 2 if debug else iteration}
-    tune_analysis = tune.run(
-        PPOTrainer,
-        config=rllib_config,
-        stop=stop,
-        max_failures=5,
-        resume=False,
-        checkpoint_freq=100,
-        checkpoint_at_end=True,
-        name="PPO_New_Keynes",
-        local_dir=os.path.join(os.getcwd(), "checkpoints"),
-    )
-
-    with open(os.path.join(os.getcwd(), "checkpoints/last_checkpoint_path"), "w") as f:
-        f.write(tune_analysis.get_last_checkpoint())
-
-    return tune_analysis
-
-
-if __name__ == "__main__":
-    ray.init()
-    run(debug=False)
-    ray.shutdown()

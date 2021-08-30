@@ -2,6 +2,7 @@ import math
 from typing import Tuple
 
 import numpy as np
+from human_friction.agents.household import HouseholdAgent
 from human_friction.agents.nonprofitfirm import SimpleFirm
 from human_friction.environment.new_keynes import NewKeynesMarket
 from human_friction.utils.annotations import override
@@ -24,7 +25,8 @@ class SimpleNewKeynes(NewKeynesMarket):
         )
 
     def get_max_consumption(self):
-        return self.firm.technology * self.n_agents ** (-self.firm.alpha)
+        total_production = self.firm.production_function(float(self.n_agents))
+        return total_production / self.n_agents
 
     def reset(self):
         # todo make this better!
@@ -37,16 +39,17 @@ class SimpleNewKeynes(NewKeynesMarket):
         self.timestep = 0
         self.agents = {}
         self.set_up_agents()
+        self.firm.price = 1.0
         obs = {}
         for agent in self.agents.values():
             obs[agent.agent_id] = {
                 "average_wage_increase": 0.02,
                 "average_consumption": self.get_max_consumption(),
-                "budget": self.init_budget,
+                "budget": self.init_budget / self.firm.price,
                 "inflation": 0.02,
                 "employed_hours": 1.0,
                 # todo does it make sense to lower interest below 0?
-                "interest": 1.0,
+                "interest": 1.02,
                 "unemployment": 0.0,
                 "action_mask": self.get_action_mask(agent),
             }
@@ -145,7 +148,7 @@ class SimpleNewKeynes(NewKeynesMarket):
             agent.earn(occupation[agent.agent_id], wages[agent.agent_id])
             agent.consume(demand[agent.agent_id], self.firm.price)
 
-    def get_action_mask(self, agent):
+    def get_action_mask(self, agent: HouseholdAgent) -> np.array:
         actions = np.zeros(50)
         max_c = agent.budget / self.firm.price
         n = self.scale(max_c)
@@ -159,7 +162,7 @@ class SimpleNewKeynes(NewKeynesMarket):
             old_range = self.get_max_consumption() - 0.01
             new_range = n_c_actions - 0.0
             new_value = ((old_value - 0.01) * new_range) / old_range + 0.0
-        return max(1, math.floor(new_value)) * n_w_actions
+        return max(1, math.ceil(new_value)) * n_w_actions
 
     def get_custom_metrics(self):
         """
@@ -181,8 +184,15 @@ class SimpleNewKeynes(NewKeynesMarket):
                 entries.append(getattr(agent, quantity))
             metrics["agent_metrics/" + quantity] = np.mean(entries)
 
+        action_mask = list()
+        for agent in self.agents.values():
+            action_mask.append(self.get_action_mask(agent).mean())
+        metrics["agent_metrics/" + "action_mask"] = np.mean(action_mask)
+
         env_quanities = ["inflation", "interest", "unemployment"]
         for quantity in env_quanities:
             metrics["env_metrics/" + quantity] = getattr(self, quantity)
+
+        metrics["env_metrics/" + "price"] = self.firm.price
 
         return metrics

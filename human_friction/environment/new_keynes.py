@@ -4,7 +4,7 @@ from human_friction.agents.bank import CentralBank
 from human_friction.agents.household import HouseholdAgent
 from human_friction.agents.learningfirm import LearningFirm
 from human_friction.environment.base_env import BaseEnv
-from human_friction.utils import rewards
+from human_friction.rewards import rewards
 from ray.rllib.utils.typing import MultiAgentDict
 
 
@@ -59,7 +59,7 @@ class NewKeynesMarket(BaseEnv):
         assert isinstance(init_budget, float)
         self.init_budget = init_budget
 
-        init_wage = config.get("init_wage", 1.0)
+        init_wage = config.get("init_wage", 0.5623413251903491)
         assert isinstance(init_wage, float)
         assert init_wage > 0.0
         self.init_wage = init_wage

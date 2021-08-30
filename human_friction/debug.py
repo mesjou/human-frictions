@@ -1,6 +1,6 @@
 import ray
 from human_friction.rllib.models import FCNet
-from human_friction.rllib.train_action_masking import rllib_config
+from human_friction.run_configurations.rllib_config import rllib_config
 from ray.rllib.agents.ppo import PPOTrainer
 from ray.rllib.models import ModelCatalog
 

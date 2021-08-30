@@ -54,3 +54,11 @@ class RllibDiscrete(MultiAgentEnv):
             flatten_obs[agent_id]["state"] = np.fromiter(dict(sorted(observations.items())).values(), dtype=np.float32)
 
         return flatten_obs
+
+    def get_task(self):
+        """Implement this to get the current task (curriculum level)."""
+        return self.wrapped_env.init_budget
+
+    def set_task(self, task):
+        """Implement this to set the task (curriculum level) for this env."""
+        self.wrapped_env.init_budget = task
