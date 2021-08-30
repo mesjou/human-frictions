@@ -4,7 +4,6 @@ from typing import Dict
 class LearningFirm(object):
     def __init__(
         self,
-        init_labor_demand: float,
         technology: float = 0.5,
         alpha: float = 0.25,
         learning_rate: float = 0.01,
@@ -31,20 +30,34 @@ class LearningFirm(object):
         assert 1.0 > memory >= 0.0
         self.memory = memory
 
-        assert isinstance(init_labor_demand, float)
-        assert init_labor_demand >= 0.0
-        self.labor_demand: float = init_labor_demand
-
+        self.labor_demand: float = 0.0
         self.average_profit: float = 0.0
         self.profit: float = 0.0
-        self.price: float = 1.0
+        self.price: float = 0.0
         self.production: float = 0.0
         self.labor_costs: float = 0.0
+
+    def reset(
+        self,
+        price: float,
+        production: float,
+        labor_costs: float,
+        labor_demand: float,
+        average_profit: float,
+        profit: float,
+    ):
+        """Reset the values of the firm when environment is reset."""
+        self.price = price
+        self.production = production
+        self.labor_costs = labor_costs
+        self.labor_demand = labor_demand
+        self.average_profit = average_profit
+        self.profit = profit
 
     def produce(self, occupation: Dict):
         labor = sum([occupation[agent_id] for agent_id in occupation.keys()])
         assert labor > 0.0
-        self.production = self.technology * labor ** (1 - self.alpha)
+        self.production = self.production_function(labor)
 
     def learn(self, max_labor: float):
         assert max_labor > 0.0, "At least some workforce must be available"
@@ -137,3 +150,6 @@ class LearningFirm(object):
         """Calculate profit of firm after selling good for specified price."""
         assert self.price > 0.0
         self.profit = sum([consumption[agent_id] * self.price for agent_id in consumption.keys()])
+
+    def production_function(self, labor: float) -> float:
+        return self.technology * labor ** (1 - self.alpha)

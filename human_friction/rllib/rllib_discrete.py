@@ -1,5 +1,6 @@
 import numpy as np
 from gym import spaces
+from human_friction.environment.new_keynes import NewKeynesMarket
 from human_friction.environment.simple_nk import SimpleNewKeynes
 from ray.rllib import MultiAgentEnv
 from ray.rllib.utils.typing import MultiAgentDict
@@ -62,3 +63,9 @@ class RllibDiscrete(MultiAgentEnv):
     def set_task(self, task):
         """Implement this to set the task (curriculum level) for this env."""
         self.wrapped_env.init_budget = task
+
+
+class RllibNK(RllibDiscrete):
+    def __init__(self, env_config):
+        super().__init__(env_config)
+        self.wrapped_env = NewKeynesMarket(env_config)

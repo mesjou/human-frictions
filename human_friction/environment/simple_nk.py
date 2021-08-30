@@ -126,25 +126,6 @@ class SimpleNewKeynes(BaseEnv):
         return wage_increases, demand
 
     @override(BaseEnv)
-    def generate_observations(self, wage_increases: MultiAgentDict, demands: MultiAgentDict) -> MultiAgentDict:
-
-        obs = {}
-        for agent in self.agents.values():
-
-            obs[agent.agent_id] = {
-                "average_wage_increase": np.mean([wage_increases[agent.agent_id] for agent in self.agents.values()]),
-                "average_consumption": np.mean([demands[agent.agent_id] for agent in self.agents.values()]),
-                "budget": agent.budget / self.firm.price,
-                "inflation": self.inflation,
-                "employed_hours": agent.labor,
-                "interest": self.interest,
-                "unemployment": self.unemployment,
-                "action_mask": self.get_action_mask(agent),
-            }
-
-        return obs
-
-    @override(BaseEnv)
     def take_actions(self, actions: MultiAgentDict):
         """Defines the logic of a step in the environment.
 
@@ -171,6 +152,24 @@ class SimpleNewKeynes(BaseEnv):
         self.clear_capital_market()
 
         return wage_increases, demand
+
+    @override(BaseEnv)
+    def generate_observations(self, wage_increases: MultiAgentDict, demands: MultiAgentDict) -> MultiAgentDict:
+
+        obs = {}
+        for agent in self.agents.values():
+            obs[agent.agent_id] = {
+                "average_wage_increase": np.mean([wage_increases[agent.agent_id] for agent in self.agents.values()]),
+                "average_consumption": np.mean([demands[agent.agent_id] for agent in self.agents.values()]),
+                "budget": agent.budget / self.firm.price,
+                "inflation": self.inflation,
+                "employed_hours": agent.labor,
+                "interest": self.interest,
+                "unemployment": self.unemployment,
+                "action_mask": self.get_action_mask(agent),
+            }
+
+        return obs
 
     @override(BaseEnv)
     def generate_info(self):
