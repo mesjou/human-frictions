@@ -118,10 +118,12 @@ class NewKeynesMarket(SimpleNewKeynes):
         6.) Central bank sets interest rate
         7.) Agents earn interest on their not consumed income.
 
-        :param actions: (Dict) The action contains the reservation wage of each agent and the fraction of their budget
-            they want to consume.
+        Args:
+            actions (Dict): The action contains the increase in reservation wage of each agent and the
+            real vlaue they want to consume.
 
-        :return obs: (Dict) The observation of the agents. This includes average wage of the period,
+        Returns:
+            obs (dict): The observation of the agents. This includes average wage increase of the period,
             their budget, the inflation and interest rates.
         """
 

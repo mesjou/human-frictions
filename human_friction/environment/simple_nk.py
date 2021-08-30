@@ -130,16 +130,13 @@ class SimpleNewKeynes(BaseEnv):
         """Defines the logic of a step in the environment.
 
         1.) Agents supply labor and earn income.
-        2.) Firms set prices as a markup.
-        3.) Agents consume from their initial budget.
-        4.) Firm learns
-        5.) Agents earn dividends from firms.
-        6.) Central bank sets interest rate
-        7.) Agents earn interest on their not consumed income.
+        2.) Firms set price to have zero profit.
+        3.) Agents consume from their budget.
+        4.) Central bank sets interest rate
+        5.) Agents earn interest on their not consumed income.
 
         Args
-            actions: (Dict) The action contains the reservation wage of each agent and the fraction of their budget
-                they want to consume.
+            actions: (Dict) The action contains the wage increase of each agent and the real value they want to consume.
 
         """
 
