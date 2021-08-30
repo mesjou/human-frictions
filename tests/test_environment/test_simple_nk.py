@@ -21,10 +21,10 @@ def test_clear_labor_market():
 
 
 def test_get_unemployment():
-    config = {"episode_length": 20, "n_agents": 4, "init_budget": 0.0}
+    config = {"episode_length": 20, "n_agents": 4, "init_budget": 0.0, "init_unemployment": 0.01}
     env = SimpleNewKeynes(config)
     env.reset()
-    assert env.get_unemployment() == (4 - 0.01) / 4
+    assert pytest.approx(env.get_unemployment()) == 0.01
 
     env.firm.labor_demand = 2.0
     assert env.get_unemployment() == 0.5
@@ -147,25 +147,29 @@ def test_generate_observations():
     env = SimpleNewKeynes(config)
     env.reset()
     actions = {"agent-0": 0, "agent-1": 2, "agent-2": 1}
-    obs = env.generate_observations(actions)
+    w, d = env.take_actions(actions)
+    obs = env.generate_observations(w, d)
     for agent_id, agent_obs in obs.items():
         assert pytest.approx(agent_obs["average_wage_increase"]) == 0.025
         assert agent_obs["average_consumption"] == 0.01
 
     actions = {"agent-0": 40, "agent-1": 42, "agent-2": 41}
-    obs = env.generate_observations(actions)
+    w, d = env.take_actions(actions)
+    obs = env.generate_observations(w, d)
     for agent_id, agent_obs in obs.items():
         assert pytest.approx(agent_obs["average_wage_increase"]) == 0.025
         assert agent_obs["average_consumption"] == 0.01 + (1.0 - 0.01) / 9 * 8
 
     actions = {"agent-0": 40, "agent-1": 45, "agent-2": 20}
-    obs = env.generate_observations(actions)
+    w, d = env.take_actions(actions)
+    obs = env.generate_observations(w, d)
     for agent_id, agent_obs in obs.items():
         assert agent_obs["average_wage_increase"] == 0.0
         assert agent_obs["average_consumption"] == np.mean([0.01 + (1 - 0.01) / 9 * 8, 1.0, 0.01 + (1 - 0.01) / 9 * 4])
 
     actions = {"agent-0": 49, "agent-1": 44, "agent-2": 4}
-    obs = env.generate_observations(actions)
+    w, d = env.take_actions(actions)
+    obs = env.generate_observations(w, d)
     for agent_id, agent_obs in obs.items():
         assert pytest.approx(agent_obs["average_wage_increase"]) == 0.1
         assert pytest.approx(agent_obs["average_consumption"]) == np.mean([0.01, 0.01 + (1 - 0.01) / 9 * 8, 1])
@@ -236,6 +240,7 @@ def test_get_action_mask():
     }
     env = SimpleNewKeynes(config)
     env.reset()
+    env.firm.price = 1.0
     assert sum(env.get_action_mask(env.agents["agent-0"])) == 25
 
     config = {
@@ -248,6 +253,7 @@ def test_get_action_mask():
     }
     env = SimpleNewKeynes(config)
     env.reset()
+    env.firm.price = 1.0
     assert sum(env.get_action_mask(env.agents["agent-0"])) == 15
 
 

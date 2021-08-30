@@ -178,9 +178,6 @@ class NewKeynesMarket(BaseEnv):
 
         return obs, rew, done, info
 
-    def generate_info(self):
-        return {}
-
     def generate_observations(self, actions: MultiAgentDict) -> MultiAgentDict:
         """Defines the logic of a step in the environment.
 
