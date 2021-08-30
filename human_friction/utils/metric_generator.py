@@ -9,7 +9,7 @@ from human_friction.rllib.rllib_env import RllibDiscrete
 class MetricGenerator(ABC):
     def __init__(self, env: RllibDiscrete):
         agent_metrics = ["wage", "budget", "consumption", "labor", "reward"]
-        environment_metrics = ["interest", "inflation", "unemployment", "production"]
+        environment_metrics = ["interest", "inflation", "unemployment", "production", "price"]
 
         self.agent_data = collections.defaultdict(dict)
         for metric in agent_metrics:

@@ -9,7 +9,7 @@ env_config = {
     "natural_interest": 0.0,
     "phi_unemployment": 0.1,
     "phi_inflation": 0.2,
-    "init_budget": 4.0,
+    "init_budget": 10.0,
     "init_wage": 0.5623413251903491,
     "init_unemployment": 0.0,
     "init_inflation": 0.02,
