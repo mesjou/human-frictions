@@ -2,7 +2,7 @@ from typing import Sequence
 
 import numpy as np
 import pandas as pd
-from human_friction.rllib.rllib_discrete import RllibDiscrete
+from human_friction.rllib.rllib_env import RllibDiscrete
 from ray.rllib.agents.callbacks import DefaultCallbacks
 from ray.rllib.env import BaseEnv
 from ray.rllib.evaluation import MultiAgentEpisode, RolloutWorker

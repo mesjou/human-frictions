@@ -2,7 +2,7 @@ import os
 
 from human_friction.rllib.callbacks import MyCallbacks
 from human_friction.rllib.curriculum import Curriculum
-from human_friction.rllib.rllib_discrete import ACT_SPACE_AGENT, OBS_SPACE_AGENT, RllibDiscrete
+from human_friction.rllib.rllib_env import ACT_SPACE_AGENT, OBS_SPACE_AGENT, RllibDiscrete
 from human_friction.run_configurations.environment_config import env_config
 
 curr = Curriculum()

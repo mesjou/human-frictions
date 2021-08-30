@@ -1,7 +1,7 @@
 import pytest
 
 from human_friction.environment.new_keynes import NewKeynesMarket
-from human_friction.rllib.rllib_discrete import RllibNK
+from human_friction.rllib.rllib_env import RllibNK
 
 
 def act(env):

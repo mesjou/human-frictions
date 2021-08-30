@@ -3,7 +3,7 @@ from abc import ABC
 
 import matplotlib.pyplot as plt
 import pandas as pd
-from human_friction.rllib.rllib_discrete import RllibDiscrete
+from human_friction.rllib.rllib_env import RllibDiscrete
 
 
 class MetricGenerator(ABC):
