@@ -2,7 +2,7 @@ import os
 
 import ray
 from human_friction.rllib.models import FCNet
-from human_friction.run_configurations.rllib_config import rllib_config
+from human_friction.run_configurations.rllib_config import rllib_config, rllib_config_nk
 from ray import tune
 from ray.rllib.agents.ppo import PPOTrainer
 from ray.rllib.models import ModelCatalog
@@ -10,11 +10,11 @@ from ray.rllib.models import ModelCatalog
 ModelCatalog.register_custom_model("my_model", FCNet)
 
 
-def run(debug=False, iteration=2000):
+def run(debug=False, iteration=2000, level="simple"):
     stop = {"training_iteration": 2 if debug else iteration}
     tune_analysis = tune.run(
         PPOTrainer,
-        config=rllib_config,
+        config=rllib_config if level == "simple" else rllib_config_nk,
         stop=stop,
         max_failures=5,
         resume=False,

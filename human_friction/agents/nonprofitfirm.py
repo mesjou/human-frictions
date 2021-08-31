@@ -15,10 +15,17 @@ class SimpleFirm(object):
         assert alpha >= 0.0
         self.alpha = alpha
 
-        self.price: float = 1.0
+        self.price: float = 0.0
         self.production: float = 0.0
         self.labor_costs: float = 0.0
-        self.labor_demand: float = 0.01
+        self.labor_demand: float = 0.0
+
+    def reset(self, price: float, production: float, labor_costs: float, labor_demand: float):
+        """Reset the values of the firm when environment is reset."""
+        self.price = price
+        self.production = production
+        self.labor_costs = labor_costs
+        self.labor_demand = labor_demand
 
     def produce(self, demand: Dict):
         production = sum([demand[agent_id] for agent_id in demand.keys()])

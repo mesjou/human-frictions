@@ -2,7 +2,7 @@ from typing import Sequence
 
 import numpy as np
 import pandas as pd
-from human_friction.rllib.rllib_env import RllibEnv
+from human_friction.rllib.rllib_env import RllibDiscrete
 from ray.rllib.agents.callbacks import DefaultCallbacks
 from ray.rllib.env import BaseEnv
 from ray.rllib.evaluation import MultiAgentEpisode, RolloutWorker
@@ -10,13 +10,13 @@ from ray.rllib.evaluation import MultiAgentEpisode, RolloutWorker
 
 class MyCallbacks(DefaultCallbacks):
     def on_episode_start(self, worker: RolloutWorker, base_env: BaseEnv, episode: MultiAgentEpisode, **kwargs):
-        envs: Sequence[RllibEnv] = base_env.get_unwrapped()
+        envs: Sequence[RllibDiscrete] = base_env.get_unwrapped()
         social_metrics = pd.DataFrame([e.wrapped_env.get_custom_metrics() for e in envs]).mean().to_dict()
         for k, _ in social_metrics.items():
             episode.user_data[k] = []
 
     def on_episode_step(self, worker: RolloutWorker, base_env: BaseEnv, episode: MultiAgentEpisode, **kwargs):
-        envs: Sequence[RllibEnv] = base_env.get_unwrapped()
+        envs: Sequence[RllibDiscrete] = base_env.get_unwrapped()
         social_metrics = pd.DataFrame([e.wrapped_env.get_custom_metrics() for e in envs]).mean().to_dict()
         for k, v in social_metrics.items():
             episode.user_data[k].append(v)

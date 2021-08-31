@@ -37,7 +37,7 @@ class Curriculum(ABC):
             if self.task_level >= 8.0:
                 self.task_level = 8.0
         else:
-            if self.task_level >= 20.0:
-                self.task_level = 20.0
+            if self.task_level >= 10.0:
+                self.task_level = 10.0
 
         return self.task_level

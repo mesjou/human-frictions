@@ -134,3 +134,6 @@ dmypy.json
 
 # rllib
 checkpoints/
+
+# something to play around
+playground/

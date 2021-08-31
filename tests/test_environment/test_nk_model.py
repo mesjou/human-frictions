@@ -67,24 +67,24 @@ def test_clear_goods_market():
     env.agents["agent-0"].budget = 0.0
     env.firm.production = 1.0
     env.clear_goods_market(demand)
-    assert env.agents["agent-0"].budget == 0.0
+    assert env.agents["agent-0"].budget == -0.5
     assert env.agents["agent-1"].budget < 20.0
     assert env.agents["agent-1"].budget > 0.0
-    assert env.agents["agent-0"].consumption == 0.0
+    assert env.agents["agent-0"].consumption == 0.5
     assert env.agents["agent-1"].consumption == 0.3
-    assert env.firm.profit == 0.3
+    assert env.firm.profit == 0.8
 
     # agent-0 has not enough budget
     env.agents["agent-0"].budget = 0.22
     env.firm.price = 0.5
     env.firm.production = 1.0
     env.clear_goods_market(demand)
-    assert env.agents["agent-0"].budget == 0.22
+    assert env.agents["agent-0"].budget == -0.03
     assert env.agents["agent-1"].budget < 20.0
     assert env.agents["agent-1"].budget > 0.0
-    assert env.agents["agent-0"].consumption == 0.0
+    assert env.agents["agent-0"].consumption == 0.5
     assert env.agents["agent-1"].consumption == 0.3
-    assert env.firm.profit == 0.15
+    assert env.firm.profit == 0.4
 
 
 def test_clear_dividends():
@@ -219,46 +219,22 @@ def test_generate_observations():
     config = {"episode_length": 20, "n_agents": 3}
     env = NewKeynesMarket(config)
     env.reset()
-    actions = {"agent-0": [0.0, 0.5], "agent-1": [0.0, 0.3], "agent-2": [0.0, 0.1]}
-    obs = env.generate_observations(actions)
+    actions = {"agent-0": 0, "agent-1": 5, "agent-2": 10}
+    w, d = env.take_actions(actions)
+    obs = env.generate_observations(w, d)
     for agent_id, agent_obs in obs.items():
-        assert agent_obs["average_wage"] == 0.3
+        assert agent_obs["average_wage_increase"] == 0.0
 
     env.firm.labor_demand = 2.0
-    obs = env.generate_observations(actions)
+    actions = {"agent-0": 0, "agent-1": 1, "agent-2": 2}
+    w, d = env.take_actions(actions)
+    obs = env.generate_observations(w, d)
     for agent_id, agent_obs in obs.items():
-        assert agent_obs["average_wage"] == 0.2
+        assert pytest.approx(agent_obs["average_wage_increase"]) == 0.025
 
     env.firm.labor_demand = 1.5
-    obs = env.generate_observations(actions)
+    actions = {"agent-0": 49, "agent-1": 49, "agent-2": 49}
+    w, d = env.take_actions(actions)
+    obs = env.generate_observations(w, d)
     for agent_id, agent_obs in obs.items():
-        assert agent_obs["average_wage"] == (0.5 * 0.3 + 1.0 * 0.1) / 1.5
-
-
-def test_mask_demand():
-    env = NewKeynesMarket({"episode_length": 20, "n_agents": 2, "init_budget": 1.0})
-    env.reset()
-    env.firm.price = 1.0
-    demand = {"agent-0": 0.0, "agent-1": 0.0}
-    masked_demand = env.mask_demand(demand)
-    assert masked_demand == demand
-
-    demand = {"agent-0": 0.5, "agent-1": 0.999}
-    masked_demand = env.mask_demand(demand)
-    assert masked_demand == demand
-
-    demand = {"agent-0": 1.0, "agent-1": 1.01}
-    masked_demand = env.mask_demand(demand)
-    assert masked_demand == {"agent-0": 1.0, "agent-1": 0.0}
-
-    env.firm.price = 1.01
-    demand = {"agent-0": 1.0, "agent-1": 1.01}
-    masked_demand = env.mask_demand(demand)
-    assert masked_demand == {"agent-0": 0.0, "agent-1": 0.0}
-
-    env.firm.price = 1.0
-    env.agents["agent-0"].budget = 0.9
-    env.agents["agent-1"].budget = -0.2
-    demand = {"agent-0": 1.0, "agent-1": 0.5}
-    masked_demand = env.mask_demand(demand)
-    assert masked_demand == {"agent-0": 0.0, "agent-1": 0.0}
+        assert pytest.approx(agent_obs["average_wage_increase"]) == 0.1

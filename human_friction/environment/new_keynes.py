@@ -1,14 +1,10 @@
-from typing import Dict, Tuple
-
-from human_friction.agents.bank import CentralBank
-from human_friction.agents.household import HouseholdAgent
 from human_friction.agents.learningfirm import LearningFirm
-from human_friction.environment.base_env import BaseEnv
-from human_friction.rewards import rewards
+from human_friction.environment.simple_nk import SimpleNewKeynes
+from human_friction.utils.annotations import override
 from ray.rllib.utils.typing import MultiAgentDict
 
 
-class NewKeynesMarket(BaseEnv):
+class NewKeynesMarket(SimpleNewKeynes):
     """
     New Keynes Environment class. Should be used to simulate labor supply and consume decision of households.
     Instantiates the households, firm and central bank.
@@ -52,35 +48,8 @@ class NewKeynesMarket(BaseEnv):
 
         super().__init__(config)
 
-        # Optional parameters
+        # Additional parameters of the environment and the agents
         # ----------
-
-        init_budget = config.get("init_budget", 0.0)
-        assert isinstance(init_budget, float)
-        self.init_budget = init_budget
-
-        init_wage = config.get("init_wage", 0.5623413251903491)
-        assert isinstance(init_wage, float)
-        assert init_wage > 0.0
-        self.init_wage = init_wage
-
-        labor_coefficient = config.get("labor_coefficient", 0.0)
-        assert isinstance(labor_coefficient, float)
-        assert labor_coefficient >= 0.0
-        self.labor_coefficient = labor_coefficient
-
-        init_unemployment = config.get("init_unemployment", 0.0)
-        assert isinstance(init_unemployment, float)
-        assert 0.0 <= init_unemployment <= 1.0
-        self.unemployment = init_unemployment
-
-        init_inflation = config.get("init_inflation", 0.02)
-        assert isinstance(init_inflation, float)
-        self.inflation = init_inflation
-
-        init_interest = config.get("init_interest", 1.02)
-        assert isinstance(init_interest, float)
-        self.interest = init_interest
 
         technology = config.get("technology", 1.0)
         assert technology > 0.0
@@ -102,86 +71,43 @@ class NewKeynesMarket(BaseEnv):
         assert isinstance(memory, float)
         assert memory > 0.0
 
-        inflation_target = config.get("inflation_target", 0.02)
-        assert isinstance(inflation_target, float)
-
-        natural_unemployment = config.get("natural_unemployment", 0.0)
-        assert isinstance(natural_unemployment, float)
-        assert 1.0 >= natural_unemployment >= 0.0
-
-        natural_interest = config.get("natural_interest", 0.0)
-        assert isinstance(natural_interest, float)
-
-        phi_unemployment = config.get("phi_unemployment", 0.1)
-        assert isinstance(phi_unemployment, float)
-        assert phi_unemployment > 0.0
-
-        phi_inflation = config.get("phi_inflation", 0.2)
-        assert isinstance(phi_inflation, float)
-        assert phi_inflation > 0.0
-
-        # Final setup of the environment
-        # ----------
-
-        self.agents: Dict[str:HouseholdAgent] = {}
         self.firm: LearningFirm = LearningFirm(
-            init_labor_demand=float(self.n_agents),
-            technology=technology,
-            alpha=alpha,
-            learning_rate=learning_rate,
-            markup=markup,
-            memory=memory,
-        )
-        self.central_bank: CentralBank = CentralBank(
-            inflation_target=inflation_target,
-            natural_unemployment=natural_unemployment,
-            natural_interest=natural_interest,
-            phi_unemployment=phi_unemployment,
-            phi_inflation=phi_inflation,
+            technology=technology, alpha=alpha, learning_rate=learning_rate, markup=markup, memory=memory,
         )
 
-    def set_up_agents(self):
-        """Initialize the agents and give them starting endowment."""
-        for idx in range(self.n_agents):
-            agent_id = "agent-" + str(idx)
-            agent = HouseholdAgent(agent_id, self.init_budget, self.init_wage)
-            self.agents[agent_id] = agent
+    @override(SimpleNewKeynes)
+    def reset_env(self):
+        """Take init values and reset all environment entities, e.g. firm and central bank"""
+        self.unemployment = self.init_unemployment
+        self.inflation = self.init_inflation
+        self.interest = self.init_interest
 
-    def reset(self):
-        """Reset the environment.
+        labor_demand = (1 - self.unemployment) * self.n_agents
+        production = self.firm.production_function(labor_demand)
+        labor_costs = self.init_wage * labor_demand
+        price = (1 + self.firm.markup) / (1 - self.firm.alpha) * labor_costs / production
+        profit = price * production - labor_costs
+        self.firm.reset(
+            price=price,
+            production=production,
+            labor_costs=labor_costs,
+            labor_demand=labor_demand,
+            average_profit=profit,
+            profit=profit,
+        )
 
-        This method is performed in between rollouts. It resets the state of
-        the environment.
+        wage_increases = {}
+        demand = {}
+        consume = production / self.n_agents
+        for agent_id, agent in self.agents.items():
+            agent.reset(labor=1 - self.init_unemployment, consumption=consume)
+            wage_increases[agent_id] = self.inflation
+            demand[agent_id] = consume
 
-        """
-        self.timestep = 0
-        self.agents = {}
-        self.set_up_agents()
-        obs = {}
-        for agent in self.agents.values():
-            obs[agent.agent_id] = {
-                "average_wage": 0.0,
-                "budget": self.init_budget,
-                "inflation": 0.0,
-                "interest": 1.0,
-                "unemployment": 0.0,
-            }
-        return obs
+        return wage_increases, demand
 
-    def step(self, actions: MultiAgentDict) -> Tuple[MultiAgentDict, MultiAgentDict, MultiAgentDict, MultiAgentDict]:
-        self.timestep += 1
-
-        obs = self.generate_observations(actions)
-        rew = self.compute_rewards()
-        done = {"__all__": self.timestep >= self._episode_length}
-        info = self.generate_info()
-
-        return obs, rew, done, info
-
-    def generate_info(self):
-        return {}
-
-    def generate_observations(self, actions: MultiAgentDict) -> MultiAgentDict:
+    @override(SimpleNewKeynes)
+    def take_actions(self, actions: MultiAgentDict):
         """Defines the logic of a step in the environment.
 
         1.) Agents supply labor and earn income.
@@ -192,15 +118,18 @@ class NewKeynesMarket(BaseEnv):
         6.) Central bank sets interest rate
         7.) Agents earn interest on their not consumed income.
 
-        :param actions: (Dict) The action contains the reservation wage of each agent and the fraction of their budget
-            they want to consume.
+        Args:
+            actions (Dict): The action contains the increase in reservation wage of each agent and the
+            real vlaue they want to consume.
 
-        :return obs: (Dict) The observation of the agents. This includes average wage of the period,
+        Returns:
+            obs (dict): The observation of the agents. This includes average wage increase of the period,
             their budget, the inflation and interest rates.
         """
 
         # 1. - 4.
-        wages, demand = self.parse_actions(actions)
+        wage_increases, demand = self.parse_actions(actions)
+        wages = {agent.agent_id: agent.wage * (1 + wage_increases[agent.agent_id]) for agent in self.agents.values()}
         self.clear_labor_market(wages)
         self.clear_goods_market(demand)
 
@@ -208,39 +137,7 @@ class NewKeynesMarket(BaseEnv):
         self.clear_dividends(self.firm.profit)
         self.clear_capital_market()
 
-        payed_wages = [agent.labor * wages[agent.agent_id] for agent in self.agents.values()]
-        hours_worked = [agent.labor for agent in self.agents.values()]
-
-        obs = {}
-        for agent in self.agents.values():
-            obs[agent.agent_id] = {
-                "average_wage": sum(payed_wages) / sum(hours_worked),
-                "budget": agent.budget,
-                "inflation": self.inflation,
-                "interest": self.interest,
-                "unemployment": self.unemployment,
-            }
-
-        assert self.firm.labor_demand <= self.n_agents, "Labor demand cannot be satisfied from agents"
-
-        return obs
-
-    def compute_rewards(self) -> MultiAgentDict:
-        rew = {}
-        for agent in self.agents.values():
-            rew[agent.agent_id] = rewards.utility(
-                labor=agent.labor, consumption=agent.consumption, labor_coefficient=self.labor_coefficient
-            )
-        return rew
-
-    def parse_actions(self, actions: MultiAgentDict) -> Tuple[MultiAgentDict, MultiAgentDict]:
-        wages = {}
-        consumption = {}
-        for agent in self.agents.values():
-            agent_action = actions[agent.agent_id]
-            consumption[agent.agent_id] = agent_action[0]
-            wages[agent.agent_id] = agent_action[1]
-        return wages, consumption
+        return wage_increases, demand
 
     def clear_labor_market(self, wages: MultiAgentDict):
         """Household can supply labor and firms decide which to hire"""
@@ -257,8 +154,7 @@ class NewKeynesMarket(BaseEnv):
         Args:
             demand: (MultiAgentDict) defines how much each agent wants to consume in real values
         """
-        masked_demand = self.mask_demand(demand)
-        consumption = self.firm.sell_goods(masked_demand)
+        consumption = self.firm.sell_goods(demand)
         for agent in self.agents.values():
             agent.consume(consumption[agent.agent_id], self.firm.price)
         self.firm.earn_profits(consumption)
@@ -269,32 +165,3 @@ class NewKeynesMarket(BaseEnv):
         """Each agent receives a dividend computed as the share of total profit divided by number of agents"""
         for agent in self.agents.values():
             agent.budget += profit / self.n_agents
-
-    def clear_capital_market(self):
-        """Agents earn interest on their budget balance which is specified by central bank"""
-        self.interest = self.central_bank.set_interest_rate(unemployment=self.unemployment, inflation=self.inflation)
-
-        assert self.interest >= 1.0, "Negative interest is not allowed"
-        for agent in self.agents.values():
-            agent.budget = self.interest * agent.budget
-
-    def get_unemployment(self):
-        assert self.firm.labor_demand > 0.0
-        return (self.n_agents - self.firm.labor_demand) / self.n_agents
-
-    def mask_demand(self, demand: MultiAgentDict) -> MultiAgentDict:
-        """
-        Check if agent has enough budget for the desired consumption.
-        If budget is not high enough to fulfill consumption the agent is not allowed to buy something this period.
-        Demand is set to 0.
-
-        Args:
-            demand (MultiAgentDict): Dictionary of {agent_id: desired_consumption}
-
-        Returns:
-            masked_demand (MultiAgentDict): Dictionary of {agent_id: possible_consumption}
-        """
-        for agent in self.agents.values():
-            if agent.budget < demand[agent.agent_id] * self.firm.price:
-                demand[agent.agent_id] = 0.0
-        return demand

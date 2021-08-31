@@ -14,6 +14,11 @@ class HouseholdAgent(Agent):
         self.labor: float = 0.0
         self.consumption: float = 0.0
 
+    def reset(self, labor: float, consumption: float):
+        """Reset the values of the agent when environment is reset."""
+        self.labor = labor
+        self.consumption = consumption
+
     def consume(self, consumption: float, price: float):
         """Defines how much an agent consumes and how the budget is affected"""
         assert consumption >= 0.0

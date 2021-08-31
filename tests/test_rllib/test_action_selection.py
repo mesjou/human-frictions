@@ -1,4 +1,4 @@
-from human_friction.rllib.rllib_discrete import RllibDiscrete
+from human_friction.rllib.rllib_env import RllibDiscrete
 
 
 def act(env):

@@ -1,16 +1,18 @@
 import os
 
 from human_friction.rllib.callbacks import MyCallbacks
-from human_friction.rllib.curriculum import curriculum_fn
-from human_friction.rllib.rllib_discrete import ACT_SPACE_AGENT, OBS_SPACE_AGENT, RllibDiscrete
-from human_friction.run_configurations.environment_config import env_config
+from human_friction.rllib.curriculum import Curriculum
+from human_friction.rllib.rllib_env import ACT_SPACE_AGENT, OBS_SPACE_AGENT, RllibDiscrete, RllibNK
+from human_friction.run_configurations.environment_config import env_config, env_config_nk
+
+curr = Curriculum()
 
 rllib_config = {
     # === Settings for Environment ===
     "env": RllibDiscrete,
     "env_config": env_config,
     # adjust environment task diffiulty
-    "env_task_fn": curriculum_fn,
+    # "env_task_fn": curr.curriculum_fn,
     # === Settings for Rollout Worker processes ===
     # Number of rollout worker actors to create for parallel sampling. Setting
     # this to 0 will force rollouts to be done in the trainer actor.
@@ -163,4 +165,10 @@ rllib_config = {
     "no_done_at_end": False,
     # "seed": tune.grid_search(seeds),
     "callbacks": MyCallbacks,
+}
+
+rllib_config_nk = {
+    **rllib_config,
+    "env": RllibNK,
+    "env_config": env_config_nk,
 }
