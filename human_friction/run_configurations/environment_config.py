@@ -16,3 +16,10 @@ env_config = {
     "init_interest": 1.02,
     "seed": None,
 }
+
+env_config_nk = {
+    **env_config,
+    "learning_rate": 0.01,
+    "markup": 0.1,
+    "memory": 0.45,
+}

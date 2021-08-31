@@ -2,8 +2,8 @@ import os
 
 from human_friction.rllib.callbacks import MyCallbacks
 from human_friction.rllib.curriculum import Curriculum
-from human_friction.rllib.rllib_env import ACT_SPACE_AGENT, OBS_SPACE_AGENT, RllibDiscrete
-from human_friction.run_configurations.environment_config import env_config
+from human_friction.rllib.rllib_env import ACT_SPACE_AGENT, OBS_SPACE_AGENT, RllibDiscrete, RllibNK
+from human_friction.run_configurations.environment_config import env_config, env_config_nk
 
 curr = Curriculum()
 
@@ -165,4 +165,10 @@ rllib_config = {
     "no_done_at_end": False,
     # "seed": tune.grid_search(seeds),
     "callbacks": MyCallbacks,
+}
+
+rllib_config_nk = {
+    **rllib_config,
+    "env": RllibNK,
+    "env_config": env_config_nk,
 }
